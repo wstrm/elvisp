@@ -24,6 +24,8 @@ function controller(start, end, callback) {
   IPv6.commonPrefix(start, end, function resultPrefix (prefix) {
 
     var suffix = IPv6.remPrefix(prefix, start);
+    console.log(suffix);
+    var suffix = ['0x0001', '0xffff', '0xffff'];
     while(true) {
       IPv6.addBit(suffix, function resultAddress (address) {
         suffix = address;
