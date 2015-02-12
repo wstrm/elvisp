@@ -21,6 +21,6 @@
   },
   "homepage": "https://github.com/willeponken/iptd",
   "dependencies": {
-    "cjdnsadmin": "file:../../../../tmp/npm-13058-4f1d6478/git-cache-a00b35afd1e7/dc8675b5230ed44b487395789608ea59cd0f026f"
+    "cjdnsadmin": "git://github.com/willeponken/node-cjdnsadmin"
   }
 }
