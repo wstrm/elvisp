@@ -5,7 +5,7 @@ describe('IPvX', function() {
   describe('.IPv4', function() {
     var IPv4 = require('../lib/ipvx.js').IPv4;
 
-    var mocks = {
+    const mocks = {
       validAddress: {
         string: '192.168.1.43',
         array: ['192', '168', '1', '43']
@@ -71,7 +71,7 @@ describe('IPvX', function() {
   describe('.IPv6', function() {
     var IPv6 = require('../lib/ipvx.js').IPv6;
 
-    var mocks = {
+    const mocks = {
       validAddress: {
         compressed: {
           string: '2a03:b0c0:2:d0::1c0:f000',
@@ -80,7 +80,8 @@ describe('IPvX', function() {
         expanded: {
           string: '2a03:b0c0:0002:00d0:0000:0000:01c0:f000',
           array: [ '2a03', 'b0c0', '0002', '00d0', '0000', '0000', '01c0', 'f000' ]
-        }
+        },
+        decimal: [10755, 45248, 2, 208, 0, 0, 448, 61440]
       },
       invalidAddress: {
         compressed: {
@@ -152,6 +153,41 @@ describe('IPvX', function() {
 
           assert.equal(error, null);
           assert.deepEqual(resultAddress, mocks.validAddress.expanded.array);
+       
+        });
+      });
+    });
+
+
+    describe('.toDec(address, callback(error, hexAddress)', function() {
+      it('shoud convert IPv6 address to decimal (array)', function() {
+        IPv6.toDec(mocks.validAddress.expanded.array, function(error, decAddress) {
+
+          assert.equal(error, null);
+          assert.deepEqual(decAddress, mocks.validAddress.decimal);
+
+        });
+      });
+    });
+
+
+    describe('.toHex(address, callback(error, hexAddress)', function() {
+      it('shoud convert IPv6 address to hexadecimal (array)', function() {
+        IPv6.toHex(mocks.validAddress.decimal, function(error, hexAddress) {
+
+          assert.equal(error, null);
+          assert.deepEqual(hexAddress, mocks.validAddress.expanded.array);
+
+        });
+      });
+    });
+
+
+    describe('.addBit(address, callback(address)', function() {
+      it('should add a bit to the address and return callback with address', function() {
+        IPv6.addBit(mocks.validAddress.expanded.array, function(address) {
+
+          assert.deepEqual(address, ['2a03', 'b0c0', '2', 'd0', '0', '0', '1c0', 'f001']);
        
         });
       });
