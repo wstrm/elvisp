@@ -33,6 +33,15 @@ describe('IPvX', function() {
         array: ['43']
       }
     };
+    
+    
+    describe('.expandAddress(address, callback(finalAddress)', function() {
+      it('should expand an IPv4 address an return callback with finalAddress', function() {
+        IPv4.expandAddress(mocks.validAddress.string, function(finalAddress) {
+          assert.deepEqual(mocks.validAddress.array, finalAddress);
+        });
+      });
+    });
 
 
     describe('.validAddress(address)', function() {
@@ -159,18 +168,6 @@ describe('IPvX', function() {
     });
 
 
-    describe('.toDec(address, callback(error, hexAddress)', function() {
-      it('shoud convert IPv6 address to decimal (array)', function() {
-        IPv6.toDec(mocks.validAddress.expanded.array, function(error, decAddress) {
-
-          assert.equal(error, null);
-          assert.deepEqual(decAddress, mocks.validAddress.decimal);
-
-        });
-      });
-    });
-
-
     describe('.toHex(address, callback(error, hexAddress)', function() {
       it('shoud convert IPv6 address to hexadecimal (array)', function() {
         IPv6.toHex(mocks.validAddress.decimal, function(error, hexAddress) {
@@ -189,6 +186,18 @@ describe('IPvX', function() {
 
           assert.deepEqual(address, ['2a03', 'b0c0', '2', 'd0', '0', '0', '1c0', 'f001']);
        
+        });
+      });
+    });
+
+
+    describe('.toDec(address, callback(error, hexAddress)', function() {
+      it('shoud convert IPv6 address to decimal (array)', function() {
+        IPv6.toDec(mocks.validAddress.expanded.array, function(error, decAddress) {
+
+          assert.equal(error, null);
+          assert.deepEqual(decAddress, mocks.validAddress.decimal);
+
         });
       });
     });
