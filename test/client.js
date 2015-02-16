@@ -1,6 +1,6 @@
 var net = require('net');
 
-var password = 'xK43X68fP4SGS17DsaKV9HnA99JKPKz5';
+var password = 'examplePassword';
 
 var json = JSON.stringify({
   password: password,
@@ -16,7 +16,7 @@ var client = net.connect({ port: 4132 },
 
 client.on('data', function(data) {
   console.log(data.toString());
-  client.end();
+  //client.end();
 });
 
 client.on('end', function() {
