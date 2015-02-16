@@ -39,6 +39,30 @@ describe('IPvX', function() {
         });
       });
     });
+    
+    
+    describe('.toStringArr(address, callback(error, address)', function() {
+      it('should return callback with string based array (array)', function() {
+        IPv4.toStringArr([192, 168, 1, 43], function(err, address) {
+          
+          assert.equal(err, null);
+          assert.deepEqual(address, ['192', '168', '1', '43']);
+        
+        });
+      });
+    });
+    
+    
+    describe('.toString(address, callback(error, address)', function() {
+      it('should return callback with stringified address(string)', function() {
+        IPv4.toString(['192', '168', '1', '43'], function(err, address) {
+          
+          assert.equal(err, null);
+          assert.deepEqual(address, '192.168.1.43');
+        
+        });
+      });
+    });
 
     
     describe('.remPrefix(first, second)', function() {
@@ -94,7 +118,7 @@ describe('IPvX', function() {
       it('should return the common prefix for two addresses (array)', function() {
         IPv6.commonPrefix(['2a03', 'b0c0', '2', 'd0', '0', '0', '1c0', 'f000'], ['2a03', 'b0c0', '2', 'd0', '0', '0', '1cf', 'f000'], function(prefix) {
           
-          assert.deepEqual(prefix, ['2a03', 'b0c0', '2', 'd0']);
+          assert.deepEqual(prefix, ['2a03', 'b0c0', '2', 'd0', '0', '0']);
         
         });
       });
@@ -153,12 +177,24 @@ describe('IPvX', function() {
     });
 
 
-    describe('.toDec(address, callback(error, hexAddress)', function() {
+    describe('.toDec(address, callback(error, decAddress)', function() {
       it('shoud convert IPv6 address to decimal (array)', function() {
         IPv6.toDec([ '2a03', 'b0c0', '0002', '00d0', '0000', '0000', '01c0', 'f000' ], function(error, decAddress) {
 
           assert.equal(error, null);
           assert.deepEqual(decAddress, [10755, 45248, 2, 208, 0, 0, 448, 61440]);
+
+        });
+      });
+    });
+    
+        
+    describe('.toString(address, callback(error, stringAddress)', function() {
+      it('should stringify IPv6 address', function() {
+        IPv6.toString([ '2a03', 'b0c0', '0002', '00d0', '0000', '0000', '01c0', 'f000' ], function(error, stringAddress) {
+
+          assert.equal(error, null);
+          assert.deepEqual(stringAddress, '2a03:b0c0:0002:00d0:0000:0000:01c0:f000');
 
         });
       });
