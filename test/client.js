@@ -7,7 +7,7 @@ setInterval(function() {
 
   var json = JSON.stringify({
     password: password,
-    pubkey: 'testpubkey' + cnt + '.k',
+    pubkey: 'lpu15wrt3tb6d8vngq9yh3lr4gmnkuv0rgcd2jwl5rp5v0mhlg3' + cnt + '.k',
     misc: 'Cellphone 1231231232, Email john@doe'
   });
   
@@ -27,4 +27,4 @@ setInterval(function() {
   });
 
   cnt++;
-}, 0);
+}, 1000);
