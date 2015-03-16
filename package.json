@@ -20,8 +20,10 @@
     "url": "https://github.com/willeponken/iptd/issues"
   },
   "homepage": "https://github.com/willeponken/iptd",
+  "devDependencies": {
+    "mocha": "^2.2.1"
+  },
   "dependencies": {
-    "cjdnsadmin": "git://github.com/willeponken/node-cjdnsadmin",
-    "mocha": "^2.1.0"
+    "cjdns-admin": "^0.1.1"
   }
 }
