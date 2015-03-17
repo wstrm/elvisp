@@ -4,7 +4,7 @@
   "description": "IP tunnel daemon for CJDNS",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha"
   },
   "repository": {
     "type": "git",
@@ -14,7 +14,7 @@
     "iptunnel",
     "cjdns"
   ],
-  "author": "William Wennerström <william@megalicious.org>",
+  "author": "willeponken <William Wennerström>",
   "license": "GPLv3",
   "bugs": {
     "url": "https://github.com/willeponken/iptd/issues"
