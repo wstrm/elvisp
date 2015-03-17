@@ -3,7 +3,7 @@ var net = require('net');
 
 var cnt = 0;
 setInterval(function() {
-  var password = 'examplePassword';
+  var password = 'testPassword';
 
   var json = JSON.stringify({
     password: password,
