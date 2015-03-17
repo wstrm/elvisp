@@ -7,6 +7,11 @@ IP Tunnel daemon for CJDNS
 * Both IPv4/6 at the same time
 * Documentation
 
+###Status codes
+* Error: 0
+* Authenticated: 1
+* Success: 2
+
 ###API
 ####Data
 Data that is sent should be formated as JSON, and contain password for authorization to the server, and a pubkey for the registration. The misc field is optional, but can contain any string.
