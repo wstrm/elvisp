@@ -9,8 +9,7 @@ IP Tunnel daemon for CJDNS
 
 ###Status codes
 * Error: 0
-* Authenticated: 1
-* Success: 2
+* Success: 1
 
 ###API
 ####Data
