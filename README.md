@@ -1,18 +1,18 @@
 # iptd (Work in Progress)
 IP Tunnel daemon for CJDNS
 
-###TODO
+##TODO
 * Registration
 * Unit testing
 * Both IPv4/6 at the same time
 * Documentation
 
-###Status codes
+##API
+####Status codes
 * Error: 0
 * Success: 1
 
-###API
-####Data
+###Send
 Data that is sent should be formated as JSON, and contain password for authorization to the server, and a pubkey for the registration. The misc field is optional, but can contain any string.
 ```
 {
@@ -21,8 +21,28 @@ Data that is sent should be formated as JSON, and contain password for authoriza
   "misc": "Fullname: John Doe, Email: john@doe"
 }
 ```
+###Recieve
+####Success
+```
+{
+  "error": null,
+  "data": {
+    "address": "IPv6 address",
+    "pubkey": "serverPubKey.k"
+  },
+  "status": 1
+}
+```
 
-####Code
+####Error
+```
+{
+  "error": "Error message",
+  "status": 0
+}
+```
+
+###Example
 ```
 var net = require('net');
 
