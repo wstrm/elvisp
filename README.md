@@ -1,5 +1,5 @@
 # iptd (Work in Progress)
-IP Tunnel daemon for CJDNS
+IPTd is developed to distribute a public IPv6 address in a CJDNS-based IP tunnel. IPTd uses the public key that each user provides to store it in a database. IPTd adds the user's assigned address with CJDNS' admin API. IPTd then return the public key for CJDNS that IPTd runs on.
 
 ##TODO
 * Registration
