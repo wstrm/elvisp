@@ -1,7 +1,7 @@
 ![Elvisp](elvisp.png)
 
 # Elvisp (Work in Progress)
-Elvisp distributes a public IPv6 address in a cjdns-based IP tunnel. Elvisp uses the public key that each user provides to store it in a database. Elvisp adds the user's assigned address with cjdns' admin API. Elvisp then return the public key for the cjdns instance that acts like the tunnel.
+Elvisp distributes a public IPv6 address in a cjdns-based IP tunnel using the public key that each user provides. It will add the user's assigned address with cjdns' admin API. Elvisp then returns the public key for the cjdns instance that acts like the tunnel.
 
 ##TODO
 * Registration
