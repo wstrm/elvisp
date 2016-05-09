@@ -1,0 +1,17 @@
+{
+  "password": "testPassword",
+  "listen": 4132,
+  "iptunnel": {
+    "range": [
+      ["2a03", "b0c0", "0002", "00d0", "0000", "0000", "01c0", "f000"],
+      ["2a03", "b0c0", "0002", "00d0", "0000", "0000", "01c0", "f00f"]
+    ],
+    "prefix": 0
+  },
+  "cjdns": {
+    "password": "ycdzz73bn17k22c017xtdxgmq7kn7xq",
+    "pubkey": "lpu15wrt3tb6d8vngq9yh3lr4gmnkuv0rgcd2jwl5rp5v0mhlg30.k",
+    "port": "11234"
+  },
+  "db": "./db"
+}
