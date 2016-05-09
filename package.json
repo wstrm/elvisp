@@ -1,7 +1,7 @@
 {
   "name": "iptd",
   "version": "0.0.1",
-  "description": "IP tunnel daemon for CJDNS",
+  "description": "IP tunnel daemon for cjdns",
   "main": "server.js",
   "scripts": {
     "test": "mocha"

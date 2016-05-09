@@ -1,5 +1,6 @@
-var net = require('net');
+"use strict";
 
+var net = require('net');
 
 var cnt = 0;
 setInterval(function() {
