@@ -24,6 +24,7 @@
     "mocha": "^2.2.1"
   },
   "dependencies": {
-    "cjdns-admin": "^0.1.1"
+    "cjdns-admin": "^0.2.0",
+    "nconf": "^0.8.4"
   }
 }
