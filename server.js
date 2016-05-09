@@ -1,6 +1,6 @@
 "use strict";
 
-var iptd = require('./lib/iptd.js'),
+var elvisp = require('./lib/elvisp.js'),
     log  = require('./lib/log.js'),
     fs   = require('fs');
 
@@ -33,8 +33,8 @@ try {
 config.cjdns = cjdnsadmin;
 config.cjdns.pubkey = cjdroute.publicKey;
 
-var iptdServer = new iptd(config);
-iptdServer.listen();
+var elvispServer = new elvisp(config);
+elvispServer.listen();
 
 /*
  * Reload IPTd on SIGHUP
@@ -44,7 +44,7 @@ iptdServer.listen();
  */
 process.on('SIGHUP', function() {
   log.info('SIGHUP recieved, reloading...');
-  iptdServer.reload(function(err, result) {
+  elvispServer.reload(function(err, result) {
     if (err) {
       throw new Error(err);
     }

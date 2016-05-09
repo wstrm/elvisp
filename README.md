@@ -1,5 +1,7 @@
-# iptd (Work in Progress)
-IPTd is developed to distribute a public IPv6 address in a cjdns-based IP tunnel. IPTd uses the public key that each user provides to store it in a database. IPTd adds the user's assigned address with cjdns' admin API. IPTd then return the public key for the cjdns instance that acts like the tunnel.
+![Elvisp](elvisp.png)
+
+# Elvisp (Work in Progress)
+Elvisp distributes a public IPv6 address in a cjdns-based IP tunnel. Elvisp uses the public key that each user provides to store it in a database. Elvisp adds the user's assigned address with cjdns' admin API. Elvisp then return the public key for the cjdns instance that acts like the tunnel.
 
 ##TODO
 * Registration
