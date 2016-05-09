@@ -17,7 +17,7 @@ var config = {
   db: __dirname + '/db'
 };
 
-var cjdnsadmin = JSON.parse(fs.readFileSync(process.env['HOME'] + '/.cjdnsadmin'));
+var cjdnsadmin = JSON.parse(fs.readFileSync(process.env.HOME + '/.cjdnsadmin'));
 var cjdroute = fs.readFileSync(cjdnsadmin.config);
 
 try {
@@ -25,7 +25,9 @@ try {
 } catch (err) {
   log.warn('Failed to parse JSON, falling back to eval');
 
-  eval('cjdroute = ' + cjdroute);
+  /* jshint ignore:start */
+  eval('cjdroute = ' + cjdroute); // TODO: Find way of doing this without `eval`.
+  /* jshint ignore:end */
 }
 
 config.cjdns = cjdnsadmin;
@@ -36,9 +38,9 @@ iptdServer.listen();
 
 /*
  * Reload IPTd on SIGHUP
- * This is useful if CJDNS has crashed or restarted
+ * This is useful if cjdns has crashed or restarted
  * and you want to load all the registered users into
- * CJDNS again.
+ * cjdns again.
  */
 process.on('SIGHUP', function() {
   log.info('SIGHUP recieved, reloading...');

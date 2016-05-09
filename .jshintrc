@@ -1,0 +1,9 @@
+{
+  "globalstrict": true,
+  "node": true,
+  "esnext": true,
+  "globals": {
+    "describe": false,
+    "it": false
+  }
+}

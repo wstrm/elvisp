@@ -1,5 +1,6 @@
-var assert = require('assert');
+"use strict";
 
+var assert = require('assert');
 
 describe('IPvX', function() {
   describe('.IPv4', function() {
