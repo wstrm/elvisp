@@ -50,7 +50,7 @@ var net = require('net');
 
 var client = net.connect({ port: 4123 }, function() {
   client.write(JSON.stringify({
-    password; 'Auth Pasword',
+    password: 'Auth Pasword',
     pubkey: 'Public key for the user',
     misc: 'Misc information, optional'
   }));
