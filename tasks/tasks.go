@@ -15,6 +15,11 @@ type Task struct {
 	argv []string
 }
 
+// SetArgs sets the argument array
+func (t Task) SetArgs(a []string) {
+	t.argv = a
+}
+
 func (t Task) errorString(e string) string {
 	return "error " + e
 }

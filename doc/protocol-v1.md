@@ -3,6 +3,7 @@
 ### Error codes
   * `1` Invalid task specified
   * `2` Invalid length of arguments
+
 ### Standard error
 ```
 error <error code> <error message>

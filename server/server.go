@@ -19,7 +19,7 @@ func taskFactory(input string) tasks.TaskInterface {
 		cmd := strings.ToLower(array[0])
 		argv := array[1:]
 
-		t.argv = argv
+		t.SetArgs(argv)
 
 		switch cmd {
 		case "add":
@@ -37,7 +37,7 @@ func taskFactory(input string) tasks.TaskInterface {
 }
 
 func taskRunner(t tasks.TaskInterface, out chan string) {
-	out <- t.run() + "\n"
+	out <- t.Run() + "\n"
 }
 
 func requestHandler(conn net.Conn, out chan string) error {
