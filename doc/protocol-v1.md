@@ -77,5 +77,5 @@ add <master-password-for-admin> <public-key-for-user.k>
 
 Get:
 ```
-sucess Added user: <public-key-for-user.k>
+success Added user: <public-key-for-user.k>
 ```
