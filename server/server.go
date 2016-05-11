@@ -22,8 +22,8 @@ func taskFactory(input string) tasks.TaskInterface {
 		t.argv = argv
 
 		switch cmd {
-		case "register":
-			return tasks.Register{t}
+		case "add":
+			return tasks.Add{t}
 		case "remove":
 			return tasks.Remove{t}
 		case "lease":
