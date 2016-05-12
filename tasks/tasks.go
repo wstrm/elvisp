@@ -20,10 +20,12 @@ func (t Task) SetArgs(a []string) {
 	t.argv = a
 }
 
+// errorString returns a string prefixed with "error"
 func (t Task) errorString(e string) string {
 	return "error " + e
 }
 
+// successString returns a string prefix with "success"
 func (t Task) successString(s string) string {
 	return "success " + s
 }
@@ -52,7 +54,7 @@ func (t Add) Run() string {
 	return t.successString("<<LEASED ADDRESS HERE>>")
 }
 
-// Run ...
+// Run removes a user
 func (t Remove) Run() string {
 	if len(t.argv) != 2 {
 		return t.errorString(errorInvalidLength)
@@ -61,7 +63,7 @@ func (t Remove) Run() string {
 	return t.successString("Removed user: " + t.argv[0])
 }
 
-// Run ...
+// Run leases a new address (if available)
 func (t Lease) Run() string {
 	if len(t.argv) != 2 {
 		return t.errorString(errorInvalidLength)
@@ -70,7 +72,7 @@ func (t Lease) Run() string {
 	return t.successString("<<LEASED ADDRESS HERE>>")
 }
 
-// Run ...
+// Run releases a lease from a user
 func (t Release) Run() string {
 	if len(t.argv) != 2 {
 		return t.errorString(errorInvalidLength)
@@ -79,7 +81,7 @@ func (t Release) Run() string {
 	return t.successString("Released lease for user: " + t.argv[0])
 }
 
-// Run ...
+// Run returns a Invalid Task error
 func (t Invalid) Run() string {
 	return t.errorString(errorInvalidTask)
 }
