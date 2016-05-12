@@ -11,6 +11,7 @@ import (
 	"github.com/willeponken/elvisp/tasks"
 )
 
+// taskFactory creates a new task based on an string which defines the type.
 func taskFactory(input string) tasks.TaskInterface {
 	t := tasks.Task{}
 
@@ -36,10 +37,12 @@ func taskFactory(input string) tasks.TaskInterface {
 	return tasks.Invalid{t}
 }
 
+// taskRunner runs a task and inputs its output into a channel.
 func taskRunner(t tasks.TaskInterface, out chan string) {
 	out <- t.Run() + "\n"
 }
 
+// requestHandler reads from a TCP connection/session and writes it to a channel.
 func requestHandler(conn net.Conn, out chan string) error {
 	defer close(out)
 
@@ -54,6 +57,7 @@ func requestHandler(conn net.Conn, out chan string) error {
 	}
 }
 
+// sendHandler copies all communication from a channel to a TCP connection/session. Empty messages and errors terminates the loop.
 func sendHandler(conn net.Conn, in <-chan string) {
 	defer conn.Close()
 
@@ -67,7 +71,7 @@ func sendHandler(conn net.Conn, in <-chan string) {
 	}
 }
 
-// Listen to the defined port.
+// Listen starts listening on a defined port using TCP. It will then initialize two handlers, request and send handler, as goroutines.
 func Listen(port string) error {
 
 	ln, err := net.Listen("tcp", port)
