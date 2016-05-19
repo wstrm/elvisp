@@ -1,5 +1,7 @@
 package tasks
 
+import "github.com/willeponken/elvisp/database"
+
 const (
 	errorInvalidLength = "2 Invalid length of arguments"
 	errorInvalidTask   = "1 Invalid task specified"
@@ -10,14 +12,20 @@ type TaskInterface interface {
 	Run() string
 }
 
-// Task contains the arguments that the task needs
+// Task needs the arguments to use, and a database to save the changes to
 type Task struct {
 	argv []string
+	db   *database.Database
 }
 
 // SetArgs sets the argument array
 func (t Task) SetArgs(a []string) {
 	t.argv = a
+}
+
+// SetDB sets the database to use
+func (t Task) SetDB(db *database.Database) {
+	t.db = db
 }
 
 // errorString returns a string prefixed with "error"

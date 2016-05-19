@@ -44,18 +44,17 @@ func (db *Database) initBuckets(buckets []string) {
 }
 
 // Open initializes or opens a database from a defined directory
-func (db *Database) Open(path string) error {
-	var err error
+func Open(path string) (db Database, err error) {
 
 	db.DB, err = bolt.Open(path, 0600, nil)
 	if err != nil {
 		db.Close()
 
-		return err
+		return
 	}
 
-	var userBucket = []string{UserBucket}
-	db.initBuckets(userBucket)
+	var buckets = []string{UsersBucket}
+	db.initBuckets(buckets)
 
-	return nil
+	return
 }
