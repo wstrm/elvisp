@@ -16,4 +16,5 @@ func (c *Conn) AddUser(publicKey string) error {
 	if key.Valid() == false {
 		return errors.New("Invalid public key")
 	}
+
 }

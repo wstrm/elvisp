@@ -8,11 +8,17 @@ import (
 	"net"
 	"strings"
 
+	"github.com/willeponken/elvisp/database"
 	"github.com/willeponken/elvisp/tasks"
 )
 
+// Server holds a database.
+type Server struct {
+	db database.Database
+}
+
 // taskFactory creates a new task based on an string which defines the type.
-func taskFactory(input string) tasks.TaskInterface {
+func (s *Server) taskFactory(input string) tasks.TaskInterface {
 	t := tasks.Task{}
 
 	array := strings.Split(input, " ")
@@ -21,6 +27,7 @@ func taskFactory(input string) tasks.TaskInterface {
 		argv := array[1:]
 
 		t.SetArgs(argv)
+		t.SetDB(&s.db)
 
 		switch cmd {
 		case "add":
@@ -38,12 +45,12 @@ func taskFactory(input string) tasks.TaskInterface {
 }
 
 // taskRunner runs a task and inputs its output into a channel.
-func taskRunner(t tasks.TaskInterface, out chan string) {
+func (s *Server) taskRunner(t tasks.TaskInterface, out chan string) {
 	out <- t.Run() + "\n"
 }
 
 // requestHandler reads from a TCP connection/session and writes it to a channel.
-func requestHandler(conn net.Conn, out chan string) error {
+func (s *Server) requestHandler(conn net.Conn, out chan string) error {
 	defer close(out)
 
 	for {
@@ -52,13 +59,13 @@ func requestHandler(conn net.Conn, out chan string) error {
 			return err
 		}
 
-		t := taskFactory(strings.TrimRight(string(line), "\n"))
-		go taskRunner(t, out)
+		t := s.taskFactory(strings.TrimRight(string(line), "\n"))
+		go s.taskRunner(t, out)
 	}
 }
 
 // sendHandler copies all communication from a channel to a TCP connection/session. Empty messages and errors terminates the loop.
-func sendHandler(conn net.Conn, in <-chan string) {
+func (s *Server) sendHandler(conn net.Conn, in <-chan string) {
 	defer conn.Close()
 
 	for {
@@ -71,12 +78,19 @@ func sendHandler(conn net.Conn, in <-chan string) {
 	}
 }
 
-// Listen starts listening on a defined port using TCP. It will then initialize two handlers, request and send handler, as goroutines.
-func Listen(port string) error {
+// Listen starts listening on a defined port using TCP and connects to a BoltDB database. It will then initialize two handlers, request and send handler, as goroutines.
+func Listen(port, db string) (err error) {
+	var s Server
+
+	// First, we need to make sure we are able to communicate with the database
+	s.db, err = database.Open(db)
+	if err != nil {
+		return
+	}
 
 	ln, err := net.Listen("tcp", port)
 	if err != nil {
-		return err
+		return
 	}
 
 	var conn net.Conn
@@ -89,7 +103,7 @@ func Listen(port string) error {
 
 		channel := make(chan string)
 
-		go requestHandler(conn, channel)
-		go sendHandler(conn, channel)
+		go s.requestHandler(conn, channel)
+		go s.sendHandler(conn, channel)
 	}
 }

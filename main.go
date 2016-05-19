@@ -7,5 +7,9 @@ import (
 )
 
 func main() {
-	log.Fatal(server.Listen(":4132"))
+	port := ":4132"
+	db := "/tmp/elvisp-db"
+
+	log.Printf("Listening to: %s and using database at: %s", port, db)
+	log.Fatal(server.Listen(port, db))
 }
