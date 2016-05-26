@@ -53,7 +53,7 @@ func Open(path string) (db Database, err error) {
 		return
 	}
 
-	var buckets = []string{UsersBucket}
+	var buckets = []string{usersBucket, adminBucket}
 	db.initBuckets(buckets)
 
 	return

@@ -1,4 +1,4 @@
-package iptunnel
+package cjdns
 
 import (
 	"errors"
@@ -17,4 +17,5 @@ func (c *Conn) AddUser(publicKey string) error {
 		return errors.New("Invalid public key")
 	}
 
+	return nil
 }

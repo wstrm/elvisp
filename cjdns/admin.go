@@ -1,4 +1,4 @@
-package iptunnel
+package cjdns
 
 import (
 	"github.com/fc00/go-cjdns/admin"
@@ -17,7 +17,9 @@ func Connect(addr string, port int, password string) (conn *Conn, err error) {
 		Password: password,
 	}
 
-	conn, err = Connect(conf)
+	c, err := admin.Connect(&conf)
+
+	conn = &Conn{c}
 
 	return
 }

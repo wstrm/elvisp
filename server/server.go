@@ -3,42 +3,120 @@ package server
 import (
 	"bufio"
 	"bytes"
+	"errors"
 	"io"
 	"log"
 	"net"
 	"strings"
 
+	"golang.org/x/crypto/bcrypt"
+
+	"github.com/willeponken/elvisp/cjdns"
 	"github.com/willeponken/elvisp/database"
 	"github.com/willeponken/elvisp/tasks"
 )
 
-// Server holds a database.
+// Server holds a database and a connection to cjdns admin
 type Server struct {
-	db database.Database
+	db    *database.Database
+	admin *cjdns.Conn
+}
+
+// authAdmin checks the password with the saved hash in the database
+func (s *Server) authAdmin(password string) error {
+	hash, err := s.db.AdminHash()
+	if err != nil {
+		return err
+	}
+
+	return bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
+}
+
+// initAdmin sets the hashed admin password in the database
+func (s *Server) initAdmin(password string) error {
+	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		return err
+	}
+
+	return s.db.SetAdmin(string(hash))
+}
+
+// resolveIPv6 takes a string and converts it into IP address
+func resolveIPv6(addr string) (ip net.IP, err error) {
+	tcpAddr, err := net.ResolveTCPAddr("tcp6", addr)
+	if err != nil {
+		return
+	}
+
+	ip = tcpAddr.IP
+
+	str := ip.String()
+
+	if ip.To4() != nil { // If able to parse to IPv4 the address is invalid
+		err = errors.New("IP" + ip.String() + "is not IPv6")
+		return
+	}
+
+	if []byte(str)[0] != 0xFC { // If the first bit is 0xFC then it's in the cjdns address space
+		err = errors.New("IP" + str + " is not in the cjdns address space (0xFC)")
+	}
+
+	return
 }
 
 // taskFactory creates a new task based on an string which defines the type.
-func (s *Server) taskFactory(input string) tasks.TaskInterface {
-	t := tasks.Task{}
+func (s *Server) taskFactory(conn net.Conn, input string) tasks.TaskInterface {
+	var t tasks.Task
 
 	array := strings.Split(input, " ")
-	if len(array) >= 2 {
-		cmd := strings.ToLower(array[0])
-		argv := array[1:]
+	if len(array) < 2 {
+		return tasks.Invalid{t}
+	}
 
-		t.SetArgs(argv)
-		t.SetDB(&s.db)
+	var password, address string
 
-		switch cmd {
-		case "add":
-			return tasks.Add{t}
-		case "remove":
-			return tasks.Remove{t}
-		case "lease":
-			return tasks.Lease{t}
-		case "release":
-			return tasks.Release{t}
+	cmd := strings.ToLower(array[0])
+	argv := array[1:]
+	auth := false
+
+	// If longer than 3, the second element should be a password for the administrator, and the third the address.
+	if len(array) == 3 {
+		password = array[1]
+		address = array[2]
+
+		if err := s.authAdmin(password); err != nil {
+			log.Printf("Failed to authenticate administrator: %s", err)
+
+			return tasks.Invalid{t}
 		}
+
+		auth = true
+	} else {
+		// If not admin, use the remote address that is currently connecting
+		address = conn.RemoteAddr().String()
+	}
+
+	// Append IPv6 with brackets so resolveIPv6 is able to parse it
+	ipv6, err := resolveIPv6("[" + address + "]")
+	if err != nil {
+		return tasks.Invalid{t}
+	}
+
+	t, err = tasks.Init(argv, s.db, s.admin, ipv6, auth)
+	if err != nil {
+		return tasks.Invalid{t}
+	}
+
+	switch cmd {
+	case "add":
+		return tasks.Add{t}
+	case "remove":
+		return tasks.Remove{t}
+	case "lease":
+		return tasks.Lease{t}
+	case "release":
+		return tasks.Release{t}
 	}
 
 	return tasks.Invalid{t}
@@ -59,7 +137,7 @@ func (s *Server) requestHandler(conn net.Conn, out chan string) error {
 			return err
 		}
 
-		t := s.taskFactory(strings.TrimRight(string(line), "\n"))
+		t := s.taskFactory(conn, strings.TrimRight(string(line), "\n"))
 		go s.taskRunner(t, out)
 	}
 }
@@ -78,17 +156,29 @@ func (s *Server) sendHandler(conn net.Conn, in <-chan string) {
 	}
 }
 
-// Listen starts listening on a defined port using TCP and connects to a BoltDB database. It will then initialize two handlers, request and send handler, as goroutines.
-func Listen(port, db string) (err error) {
+// Listen starts listening on a defined port using TCP6, connects to a BoltDB database and sets a admin password if defined. It will then initialize two handlers, request and send handler, as goroutines.
+func Listen(port, db, password, cjdnsIP string, cjdnsPort int, cjdnsPassword string) (err error) {
 	var s Server
 
 	// First, we need to make sure we are able to communicate with the database
-	s.db, err = database.Open(db)
+	d, err := database.Open(db)
+	if err != nil {
+		return
+	}
+	s.db = &d
+
+	if password != "" {
+		s.initAdmin(password)
+	}
+
+	// Listen only to IPv6 network. Administrators can connect locally using [::1].
+	ln, err := net.Listen("tcp6", port)
 	if err != nil {
 		return
 	}
 
-	ln, err := net.Listen("tcp", port)
+	// Connect to the cjdns admin interface
+	s.admin, err = cjdns.Connect(cjdnsIP, cjdnsPort, cjdnsPassword)
 	if err != nil {
 		return
 	}
