@@ -5,8 +5,8 @@ import (
 	"log"
 )
 
-// UsersBucket defines the namespace for the user bucket
-const UsersBucket = "Users"
+// usersBucket defines the namespace for the user bucket
+const usersBucket = "Users"
 
 // uint64ToBin returns an 8-byte big endian representation of v
 func uint64ToBin(v uint64) []byte {
@@ -19,12 +19,12 @@ func uint64ToBin(v uint64) []byte {
 func (db *Database) AddUser(pubkey string) (err error) {
 	err = db.Update(func(tx *Tx) error {
 
-		usersBucket := tx.Bucket([]byte(UsersBucket))
-		lease, _ := usersBucket.NextSequence()
+		bucket := tx.Bucket([]byte(usersBucket))
+		lease, _ := bucket.NextSequence()
 
 		log.Printf("Adding new user with key: %s and lease: %v.", pubkey, lease)
 
-		return usersBucket.Put(uint64ToBin(lease), []byte(pubkey)) // End of transaction after data is put
+		return bucket.Put(uint64ToBin(lease), []byte(pubkey)) // End of transaction after data is put
 	})
 
 	return

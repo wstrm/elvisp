@@ -1,6 +1,12 @@
 package tasks
 
-import "github.com/willeponken/elvisp/database"
+import (
+	"net"
+
+	"github.com/fc00/go-cjdns/key"
+	"github.com/willeponken/elvisp/cjdns"
+	"github.com/willeponken/elvisp/database"
+)
 
 const (
 	errorInvalidLength = "2 Invalid length of arguments"
@@ -14,18 +20,31 @@ type TaskInterface interface {
 
 // Task needs the arguments to use, and a database to save the changes to
 type Task struct {
-	argv []string
-	db   *database.Database
+	argv   []string
+	db     *database.Database
+	admin  *cjdns.Conn
+	ip     net.IP
+	pubkey *key.Public
+	auth   bool
 }
 
-// SetArgs sets the argument array
-func (t Task) SetArgs(a []string) {
-	t.argv = a
-}
+// Init returns a new task
+func Init(argv []string, db *database.Database, admin *cjdns.Conn, ip net.IP, auth bool) (task Task, err error) {
+	task.argv = argv
+	task.ip = ip
+	task.auth = auth
 
-// SetDB sets the database to use
-func (t Task) SetDB(db *database.Database) {
-	t.db = db
+	k, err := admin.LookupPubKey(ip.String())
+	if err != nil {
+		return
+	}
+
+	task.pubkey, err = key.DecodePublic(k)
+
+	task.db = db
+	task.admin = admin
+
+	return
 }
 
 // errorString returns a string prefixed with "error"
@@ -55,7 +74,7 @@ type Invalid struct{ Task }
 
 // Run adds a user using the public key and a token
 func (t Add) Run() string {
-	if len(t.argv) < 3 {
+	if (len(t.argv) != 1) || (len(t.argv) != 2) {
 		return t.errorString(errorInvalidLength)
 	}
 
