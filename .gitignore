@@ -1,6 +1,9 @@
 # Go binary
 elvisp
 
+# Glide
+vendor/
+
 # Logs
 logs
 *.log

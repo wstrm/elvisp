@@ -163,6 +163,8 @@ func Listen(port, db, password, cjdnsIP string, cjdnsPort int, cjdnsPassword str
 	// First, we need to make sure we are able to communicate with the database
 	d, err := database.Open(db)
 	if err != nil {
+		log.Printf("Unable to open database: %s", err)
+
 		return
 	}
 	s.db = &d
@@ -174,12 +176,16 @@ func Listen(port, db, password, cjdnsIP string, cjdnsPort int, cjdnsPassword str
 	// Listen only to IPv6 network. Administrators can connect locally using [::1].
 	ln, err := net.Listen("tcp6", port)
 	if err != nil {
+		log.Printf("Unable to listen to port: %s, due to error: %s", port, err)
+
 		return
 	}
 
 	// Connect to the cjdns admin interface
 	s.admin, err = cjdns.Connect(cjdnsIP, cjdnsPort, cjdnsPassword)
 	if err != nil {
+		log.Printf("Unable to connect to cjdns admin on: %s:%d, due to error: %s", cjdnsIP, cjdnsPort, err)
+
 		return
 	}
 
@@ -187,7 +193,8 @@ func Listen(port, db, password, cjdnsIP string, cjdnsPort int, cjdnsPassword str
 	for {
 		conn, err = ln.Accept()
 		if err != nil {
-			log.Println(err)
+			log.Printf("TCP connection returned error: %s", err)
+
 			continue
 		}
 
