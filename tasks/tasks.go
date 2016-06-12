@@ -1,6 +1,7 @@
 package tasks
 
 import (
+	"log"
 	"net"
 
 	"github.com/fc00/go-cjdns/key"
@@ -34,12 +35,21 @@ func Init(argv []string, db *database.Database, admin *cjdns.Conn, ip net.IP, au
 	task.ip = ip
 	task.auth = auth
 
-	k, err := admin.LookupPubKey(ip.String())
-	if err != nil {
-		return
+	var k string
+	if auth {
+		k = argv[0]
+	} else {
+		k, err := admin.LookupPubKey(ip.String())
+
+		if err != nil {
+			return task, err
+		}
 	}
 
 	task.pubkey, err = key.DecodePublic(k)
+	if err != nil {
+		return task, err
+	}
 
 	task.db = db
 	task.admin = admin
@@ -74,10 +84,25 @@ type Invalid struct{ Task }
 
 // Run adds a user using the public key and a token
 func (t Add) Run() string {
-	if (len(t.argv) != 1) || (len(t.argv) != 2) {
-		return t.errorString(errorInvalidLength)
+	db := t.db
+	admin := t.admin
+	pubkey := t.pubkey
+
+	lease, err := db.AddUser(pubkey)
+	if err != nil {
+		return t.errorString(err.Error())
 	}
 
+	if err := admin.AddUser(pubkey); err != nil {
+		// If we failed to add the user, delete it from the database.
+		if e := db.DelUser(pubkey); e != nil {
+			log.Println(e)
+		}
+
+		return t.errorString(err.Error())
+	}
+
+	// TODO Lease address here...
 	return t.successString("<<LEASED ADDRESS HERE>>")
 }
 
