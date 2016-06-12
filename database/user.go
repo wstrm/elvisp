@@ -2,7 +2,11 @@ package database
 
 import (
 	"encoding/binary"
+	"errors"
 	"log"
+	"reflect"
+
+	"github.com/fc00/go-cjdns/key"
 )
 
 // usersBucket defines the namespace for the user bucket
@@ -16,15 +20,63 @@ func uint64ToBin(v uint64) []byte {
 }
 
 // AddUser inserts a new user into the UserBucket with public key and last lease
-func (db *Database) AddUser(pubkey string) (err error) {
+func (db *Database) AddUser(pubkey *key.Public) (lease int, err error) {
+	k := pubkey.String()
+
 	err = db.Update(func(tx *Tx) error {
 
 		bucket := tx.Bucket([]byte(usersBucket))
-		lease, _ := bucket.NextSequence()
+		seq, _ := bucket.NextSequence()
+		lease = int(seq)
 
-		log.Printf("Adding new user with key: %s and lease: %v.", pubkey, lease)
+		log.Printf("Adding new user with key: %s and lease: %d.", k, lease)
 
-		return bucket.Put(uint64ToBin(lease), []byte(pubkey)) // End of transaction after data is put
+		return bucket.Put(uint64ToBin(seq), []byte(k)) // End of transaction after data is put
+	})
+
+	return
+}
+
+// DelUser removes a registered user using the pubkey as identifier.
+func (db *Database) DelUser(identifier interface{}) (err error) {
+	id := reflect.ValueOf(identifier)
+	idType := id.Type()
+
+	err = db.Update(func(tx *Tx) error {
+
+		bucket := tx.Bucket([]byte(usersBucket))
+
+		if idType.Kind() == reflect.String {
+			log.Printf("Identifier for user interpreted to string.")
+
+			pubkey, ok := identifier.(string)
+			if !ok {
+				err = errors.New("Failed to convert identifier to string.")
+				return nil
+			}
+			cursor := bucket.Cursor()
+
+			for _, pk := cursor.First(); string(pk) != pubkey; _, pk = cursor.Next() {
+				err = cursor.Delete()
+				return nil
+			}
+
+			err = errors.New("Unable to delete user with public key:" + pubkey + ", because it does not exist.")
+		}
+
+		if idType.Kind() == reflect.Int {
+			log.Println("Identifier for user interpreted as integer.")
+
+			lease, ok := identifier.(uint64)
+			if !ok {
+				err = errors.New("Failed to convert identifier to integer.")
+				return nil
+			}
+
+			return bucket.Delete(uint64ToBin(lease))
+		}
+
+		return nil
 	})
 
 	return
