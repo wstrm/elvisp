@@ -6,7 +6,7 @@ import (
 	"log"
 	"reflect"
 
-	"github.com/fc00/go-cjdns/key"
+	"github.com/ehmry/go-cjdns/key"
 )
 
 // usersBucket defines the namespace for the user bucket
@@ -19,17 +19,17 @@ func uint64ToBin(v uint64) []byte {
 	return b
 }
 
-// AddUser inserts a new user into the UserBucket with public key and last lease
-func (db *Database) AddUser(pubkey *key.Public) (lease int, err error) {
+// AddUser inserts a new user into the UserBucket with public key and ID (used as seed for lease).
+func (db *Database) AddUser(pubkey *key.Public) (id uint, err error) {
 	k := pubkey.String()
 
 	err = db.Update(func(tx *Tx) error {
 
 		bucket := tx.Bucket([]byte(usersBucket))
 		seq, _ := bucket.NextSequence()
-		lease = int(seq)
+		id = uint(seq)
 
-		log.Printf("Adding new user with key: %s and lease: %d.", k, lease)
+		log.Printf("Adding new user with key: %s and ID: %d", k, id)
 
 		return bucket.Put(uint64ToBin(seq), []byte(k)) // End of transaction after data is put
 	})
@@ -47,11 +47,11 @@ func (db *Database) DelUser(identifier interface{}) (err error) {
 		bucket := tx.Bucket([]byte(usersBucket))
 
 		if idType.Kind() == reflect.String {
-			log.Printf("Identifier for user interpreted to string.")
+			log.Printf("Identifier for user interpreted to string")
 
 			pubkey, ok := identifier.(string)
 			if !ok {
-				err = errors.New("Failed to convert identifier to string.")
+				err = errors.New("Failed to convert identifier to string")
 				return nil
 			}
 			cursor := bucket.Cursor()
@@ -61,19 +61,19 @@ func (db *Database) DelUser(identifier interface{}) (err error) {
 				return nil
 			}
 
-			err = errors.New("Unable to delete user with public key:" + pubkey + ", because it does not exist.")
+			err = errors.New("Unable to delete user with public key:" + pubkey + ", because it does not exist")
 		}
 
 		if idType.Kind() == reflect.Int {
-			log.Println("Identifier for user interpreted as integer.")
+			log.Println("Identifier for user interpreted as integer")
 
-			lease, ok := identifier.(uint64)
+			id, ok := identifier.(uint64)
 			if !ok {
-				err = errors.New("Failed to convert identifier to integer.")
+				err = errors.New("Failed to convert identifier to integer")
 				return nil
 			}
 
-			return bucket.Delete(uint64ToBin(lease))
+			return bucket.Delete(uint64ToBin(id))
 		}
 
 		return nil

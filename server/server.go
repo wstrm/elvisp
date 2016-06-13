@@ -16,13 +16,13 @@ import (
 	"github.com/willeponken/elvisp/tasks"
 )
 
-// Server holds a database and a connection to cjdns admin
+// Server holds a database and a connection to cjdns admin.
 type Server struct {
 	db    *database.Database
 	admin *cjdns.Conn
 }
 
-// authAdmin checks the password with the saved hash in the database
+// authAdmin checks the password with the saved hash in the database.
 func (s *Server) authAdmin(password string) error {
 	hash, err := s.db.AdminHash()
 	if err != nil {
@@ -32,7 +32,7 @@ func (s *Server) authAdmin(password string) error {
 	return bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
 }
 
-// initAdmin sets the hashed admin password in the database
+// initAdmin sets the hashed admin password in the database.
 func (s *Server) initAdmin(password string) error {
 	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
@@ -42,7 +42,7 @@ func (s *Server) initAdmin(password string) error {
 	return s.db.SetAdmin(string(hash))
 }
 
-// resolveIPv6 takes a string and converts it into IP address
+// resolveIPv6 takes a string and converts it into IP address.
 func resolveIPv6(addr string) (ip net.IP, err error) {
 	tcpAddr, err := net.ResolveTCPAddr("tcp6", addr)
 	if err != nil {
@@ -53,13 +53,12 @@ func resolveIPv6(addr string) (ip net.IP, err error) {
 
 	str := ip.String()
 
-	if ip.To4() != nil { // If able to parse to IPv4 the address is invalid
-		err = errors.New("IP" + ip.String() + "is not IPv6")
+	if ip.To4() != nil { // If able to parse to IPv4 the address is invalid.
+		err = errors.New(ip.String() + "is not IPv6")
 		return
 	}
-
-	if []byte(str)[0] != 0xFC { // If the first bit is 0xFC then it's in the cjdns address space
-		err = errors.New("IP" + str + " is not in the cjdns address space (0xFC)")
+	if ip.To16()[0] != 0xFC { // If the first bit is not 0xFC then it's not in the cjdns address space.
+		err = errors.New(str + " is not in the cjdns address space (0xFC)")
 	}
 
 	return
@@ -70,7 +69,7 @@ func (s *Server) taskFactory(conn net.Conn, input string) tasks.TaskInterface {
 	var t tasks.Task
 
 	array := strings.Split(input, " ")
-	if len(array) < 2 {
+	if len(array) < 1 {
 		return tasks.Invalid{t}
 	}
 
@@ -93,18 +92,19 @@ func (s *Server) taskFactory(conn net.Conn, input string) tasks.TaskInterface {
 
 		auth = true
 	} else {
-		// If not admin, use the remote address that is currently connecting
+		// If not admin, use the remote address that is currently connecting.
 		address = conn.RemoteAddr().String()
 	}
 
-	// Append IPv6 with brackets so resolveIPv6 is able to parse it
-	ipv6, err := resolveIPv6("[" + address + "]")
+	ipv6, err := resolveIPv6(address)
 	if err != nil {
+		log.Printf("Unable to resolve IPv6: %s", err)
 		return tasks.Invalid{t}
 	}
 
 	t, err = tasks.Init(argv, s.db, s.admin, ipv6, auth)
 	if err != nil {
+		log.Printf("Unable to initialize task: %s", err)
 		return tasks.Invalid{t}
 	}
 
@@ -160,7 +160,7 @@ func (s *Server) sendHandler(conn net.Conn, in <-chan string) {
 func Listen(port, db, password, cjdnsIP string, cjdnsPort int, cjdnsPassword string) (err error) {
 	var s Server
 
-	// First, we need to make sure we are able to communicate with the database
+	// First, we need to make sure we are able to communicate with the database.
 	d, err := database.Open(db)
 	if err != nil {
 		log.Printf("Unable to open database: %s", err)
@@ -181,7 +181,7 @@ func Listen(port, db, password, cjdnsIP string, cjdnsPort int, cjdnsPassword str
 		return
 	}
 
-	// Connect to the cjdns admin interface
+	// Connect to the cjdns admin interface.
 	s.admin, err = cjdns.Connect(cjdnsIP, cjdnsPort, cjdnsPassword)
 	if err != nil {
 		log.Printf("Unable to connect to cjdns admin on: %s:%d, due to error: %s", cjdnsIP, cjdnsPort, err)
