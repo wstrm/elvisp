@@ -58,9 +58,18 @@ func uint128Add(a, b, i uint64) (uint64, uint64) {
 	return a, b
 }
 
+// withinNetwork checks if the generated IP address fits within the network specified.
+func withinNetwork(network *net.IPNet, ip net.IP) error {
+	if !network.Contains(ip) {
+		return errors.New("IP address is outside of available network")
+	}
+
+	return nil
+}
+
 // Generate takes the CIDR (both IPv4 and IPv6 is supported) and a ID (which is used to increment the IP address from the CIDR). Then the incremented IP address is returned.
-func Generate(cidr string, id int) (ip net.IP, err error) {
-	start, _, err := net.ParseCIDR(cidr)
+func Generate(cidr string, id uint) (ip net.IP, err error) {
+	start, network, err := net.ParseCIDR(cidr)
 	if err != nil {
 		return
 	}
@@ -68,6 +77,7 @@ func Generate(cidr string, id int) (ip net.IP, err error) {
 	// Is the IP IPv4?
 	if s := start.To4(); s != nil {
 		ip = uint32ToIP(ipToUint32(s) + uint32(id))
+		err = withinNetwork(network, ip)
 		return
 	}
 
@@ -75,6 +85,7 @@ func Generate(cidr string, id int) (ip net.IP, err error) {
 	if s := start.To16(); s != nil {
 		a, b := ipToUint128(s)
 		ip = uint128ToIP(uint128Add(a, b, uint64(id)))
+		err = withinNetwork(network, ip)
 		return
 	}
 

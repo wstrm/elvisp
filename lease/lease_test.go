@@ -5,29 +5,28 @@ import (
 	"testing"
 )
 
+var generateTests = []struct {
+	cidr string
+	id   uint
+	ip   net.IP
+	err  bool
+}{
+	{"192.168.1.0/24", 42, net.ParseIP("192.168.1.42"), false},
+	{"192.168.1.0/24", 256, net.ParseIP("192.168.2.0"), true},
+	{"1234::1222:0/16", 423411, net.ParseIP("1234::1228:75f3"), false},
+	{"1234::1222:0/120", 256, net.ParseIP("1234::1222:100"), true},
+}
+
 func TestGenerate(t *testing.T) {
-	testCIDRv4 := "192.168.1.0/24"
-	testCIDRv6 := "1234::1222:0/16"
-	testID := 5
+	for row, tests := range generateTests {
+		ip, err := Generate(tests.cidr, tests.id)
 
-	expIPv4 := net.ParseIP("192.168.1.5")
-	expIPv6 := net.ParseIP("1234::1222:5")
+		if !ip.Equal(tests.ip) {
+			t.Errorf("Row: %d returned unexpected IP, got: %v, wanted: %v", row, ip, tests.ip)
+		}
 
-	ip, err := Generate(testCIDRv4, testID)
-	if err != nil {
-		t.Errorf("%s", err.Error())
-	}
-
-	if !ip.Equal(expIPv4) {
-		t.Errorf("unexpected ip, got: %v, wanted: %v", ip, expIPv4)
-	}
-
-	ip, err = Generate(testCIDRv6, testID)
-	if err != nil {
-		t.Errorf("%s", err.Error())
-	}
-
-	if !ip.Equal(expIPv6) {
-		t.Errorf("unexpected ip, got: %v, wanted: %v", ip, expIPv6)
+		if err != nil && !tests.err {
+			t.Errorf("Row: %d returned unexpected error: %s", row, err.Error())
+		}
 	}
 }
