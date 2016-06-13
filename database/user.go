@@ -4,7 +4,6 @@ import (
 	"encoding/binary"
 	"errors"
 	"log"
-	"reflect"
 
 	"github.com/ehmry/go-cjdns/key"
 )
@@ -19,9 +18,62 @@ func uint64ToBin(v uint64) []byte {
 	return b
 }
 
+func (db *Database) userExists(identifier interface{}) (pos []byte, exists bool) {
+	err := db.View(func(tx *Tx) error {
+		bucket := tx.Bucket([]byte(usersBucket))
+
+		pubkey, isPubkey := identifier.(*key.Public)
+		if isPubkey {
+			strPubkey := pubkey.String()
+			cursor := bucket.Cursor()
+
+			log.Printf("%s", strPubkey)
+			for k, pk := cursor.First(); pk != nil; k, pk = cursor.Next() {
+				log.Printf("%s != %s", string(pk), strPubkey)
+
+				if string(pk) == strPubkey {
+					pos = k
+					exists = true
+					return nil
+				}
+			}
+
+			exists = false
+			return nil
+		}
+
+		id, isID := identifier.(uint64)
+		if isID {
+			p := uint64ToBin(id)
+			if user := bucket.Get(p); user != nil {
+				pos = p
+				exists = true
+				return nil
+			}
+
+			exists = false
+			return nil
+		}
+
+		return errors.New("Unknown identifier specified")
+	})
+
+	if err != nil {
+		exists = false
+	}
+
+	return
+}
+
 // AddUser inserts a new user into the UserBucket with public key and ID (used as seed for lease).
 func (db *Database) AddUser(pubkey *key.Public) (id uint, err error) {
 	k := pubkey.String()
+
+	_, exists := db.userExists(pubkey)
+	if exists {
+		err = errors.New("User with public key: " + pubkey.String() + " already exists")
+		return
+	}
 
 	err = db.Update(func(tx *Tx) error {
 
@@ -39,42 +91,18 @@ func (db *Database) AddUser(pubkey *key.Public) (id uint, err error) {
 
 // DelUser removes a registered user using the pubkey as identifier.
 func (db *Database) DelUser(identifier interface{}) (err error) {
-	id := reflect.ValueOf(identifier)
-	idType := id.Type()
+
+	pos, exists := db.userExists(identifier)
+	if !exists {
+		err = errors.New("User identified as: %v does not exist")
+		return
+	}
 
 	err = db.Update(func(tx *Tx) error {
 
 		bucket := tx.Bucket([]byte(usersBucket))
 
-		if idType.Kind() == reflect.String {
-			log.Printf("Identifier for user interpreted to string")
-
-			pubkey, ok := identifier.(string)
-			if !ok {
-				err = errors.New("Failed to convert identifier to string")
-				return nil
-			}
-			cursor := bucket.Cursor()
-
-			for _, pk := cursor.First(); string(pk) != pubkey; _, pk = cursor.Next() {
-				err = cursor.Delete()
-				return nil
-			}
-
-			err = errors.New("Unable to delete user with public key:" + pubkey + ", because it does not exist")
-		}
-
-		if idType.Kind() == reflect.Int {
-			log.Println("Identifier for user interpreted as integer")
-
-			id, ok := identifier.(uint64)
-			if !ok {
-				err = errors.New("Failed to convert identifier to integer")
-				return nil
-			}
-
-			return bucket.Delete(uint64ToBin(id))
-		}
+		err = bucket.Delete(pos)
 
 		return nil
 	})
