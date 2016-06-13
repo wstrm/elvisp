@@ -27,10 +27,7 @@ func (db *Database) userExists(identifier interface{}) (pos []byte, exists bool)
 			strPubkey := pubkey.String()
 			cursor := bucket.Cursor()
 
-			log.Printf("%s", strPubkey)
 			for k, pk := cursor.First(); pk != nil; k, pk = cursor.Next() {
-				log.Printf("%s != %s", string(pk), strPubkey)
-
 				if string(pk) == strPubkey {
 					pos = k
 					exists = true
@@ -72,6 +69,7 @@ func (db *Database) AddUser(pubkey *key.Public) (id uint, err error) {
 	_, exists := db.userExists(pubkey)
 	if exists {
 		err = errors.New("User with public key: " + pubkey.String() + " already exists")
+		log.Println(err)
 		return
 	}
 
@@ -95,6 +93,7 @@ func (db *Database) DelUser(identifier interface{}) (err error) {
 	pos, exists := db.userExists(identifier)
 	if !exists {
 		err = errors.New("User identified as: %v does not exist")
+		log.Println(err)
 		return
 	}
 
@@ -102,6 +101,7 @@ func (db *Database) DelUser(identifier interface{}) (err error) {
 
 		bucket := tx.Bucket([]byte(usersBucket))
 
+		log.Printf("Deleting user identified as: %v", identifier)
 		err = bucket.Delete(pos)
 
 		return nil
