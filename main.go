@@ -26,7 +26,7 @@ var context = flags{
 	password:      "test123",
 	cjdnsIP:       "127.0.0.1",
 	cjdnsPort:     11234,
-	cjdnsPassword: "test321",
+	cjdnsPassword: "ycdzz73bn17k22c017xtdxgmq7kn7xq",
 }
 
 var (

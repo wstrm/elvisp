@@ -4,9 +4,10 @@ import (
 	"log"
 	"net"
 
-	"github.com/fc00/go-cjdns/key"
+	"github.com/ehmry/go-cjdns/key"
 	"github.com/willeponken/elvisp/cjdns"
 	"github.com/willeponken/elvisp/database"
+	"github.com/willeponken/elvisp/lease"
 )
 
 const (
@@ -39,7 +40,7 @@ func Init(argv []string, db *database.Database, admin *cjdns.Conn, ip net.IP, au
 	if auth {
 		k = argv[0]
 	} else {
-		k, err := admin.LookupPubKey(ip.String())
+		k, err = admin.LookupPubKey(ip.String())
 
 		if err != nil {
 			return task, err
@@ -88,12 +89,17 @@ func (t Add) Run() string {
 	admin := t.admin
 	pubkey := t.pubkey
 
-	lease, err := db.AddUser(pubkey)
+	id, err := db.AddUser(pubkey)
 	if err != nil {
 		return t.errorString(err.Error())
 	}
 
-	if err := admin.AddUser(pubkey); err != nil {
+	ip, err := lease.Generate("192.168.1.0/24", id)
+	if err != nil {
+		return t.errorString(err.Error())
+	}
+
+	if err := admin.AddUser(pubkey, ip); err != nil {
 		// If we failed to add the user, delete it from the database.
 		if e := db.DelUser(pubkey); e != nil {
 			log.Println(e)
@@ -102,8 +108,7 @@ func (t Add) Run() string {
 		return t.errorString(err.Error())
 	}
 
-	// TODO Lease address here...
-	return t.successString("<<LEASED ADDRESS HERE>>")
+	return t.successString(ip.String())
 }
 
 // Run removes a user
