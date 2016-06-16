@@ -57,7 +57,7 @@ func init() {
 	}
 
 	// Log line file:linenumber.
-	log.SetFlags(log.LstdFlags | log.Lshortfile)
+	log.SetFlags(log.LstdFlags | log.Llongfile)
 	// Prefix log output with "[elvisp (<version>)]".
 	log.SetPrefix("[\033[32melvisp\033[0m (" + Version + ")] ")
 
