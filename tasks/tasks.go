@@ -113,11 +113,19 @@ func (t Add) Run() string {
 
 // Run removes a user
 func (t Remove) Run() string {
-	if len(t.argv) != 2 {
-		return t.errorString(errorInvalidLength)
+	db := t.db
+	admin := t.admin
+	pubkey := t.pubkey
+
+	if err := db.DelUser(pubkey); err != nil {
+		return t.errorString(err.Error())
 	}
 
-	return t.successString("Removed user: " + t.argv[0])
+	if err := admin.DelUser(pubkey); err != nil {
+		return t.errorString(err.Error())
+	}
+
+	return t.successString("Removed user: " + pubkey.String())
 }
 
 // Run leases a new address (if available)

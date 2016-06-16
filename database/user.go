@@ -3,6 +3,7 @@ package database
 import (
 	"encoding/binary"
 	"errors"
+	"fmt"
 	"log"
 
 	"github.com/ehmry/go-cjdns/key"
@@ -92,7 +93,7 @@ func (db *Database) DelUser(identifier interface{}) (err error) {
 
 	pos, exists := db.userExists(identifier)
 	if !exists {
-		err = errors.New("User identified as: %v does not exist")
+		err = fmt.Errorf("User identified as: %v does not exist", identifier)
 		log.Println(err)
 		return
 	}
