@@ -1,129 +1,63 @@
 # Protocol / API
 
-### Status codes
-* Error: 0
-* Success: 1
+### Error codes
+  * `1` Invalid task specified
+  * `2` Invalid length of arguments
+
 ### Standard error
 ```
-{
-  "error": "error-message-here",
-  "status": 0
-}
+error <error code> <error message>
 ```
 
 ## Tasks
-### Register
-
-Send:
-```
-{
-  "task": "register",
-  "data": {
-    "password": "password-for-user",
-    "pubkey": "public-key-for-user.k",
-    "token": "token-obtained-for-registration",
-    "misc": "misc-information-for-user"
-  }
-}
-```
-
-Get:
-```
-{
-  "error": null,
-  "data": {
-    "address": "2001::an::ipv6::address"
-  },
-  "status": 1
-}
-```
 
 ### Obtain lease
 
-Send:
+Send (from user node):
 ```
-{
-  "task": "lease",
-  "data": {
-    "password": "password-for-user",
-    "pubkey": "public-key-for-user.k"
-  }
-}
+lease
+```
+
+Send (using admin):
+```
+lease <master-password-for-admin> <cjdns-ipv6-address>
 ```
 
 Get:
 ```
-{
-  "error": null,
-  "data": {
-    "address": "2001::an::ipv6::address"
-  },
-  "status": 1
-}
+success <ipv4-address-here> <ipv6-address-here>
 ```
 
 ### Remove user
 
-Send:
+Send (from user node):
 ```
-{
-  "task": "remove",
-  "data": {
-    "password": "password-for-user",
-    "pubkey": "public-key-for-user.k"
-  }
-}
+remove
+```
+
+Send (using admin):
+```
+remove <master-password-for-admin> <cjdns-ipv6-address>
 ```
 
 Get:
 ```
-{
-  "error": null,
-  "status": 1
-}
-```
-
-### Release lease
-
-Send:
-```
-{
-  "task": "release",
-  "data": {
-    "password": "password-for-user",
-    "pubkey": "public-key-for-user.k"
-  }
-}
-```
-
-Get:
-```
-{
-  "error": null,
-  "status": 1
-}
+success Removed user: <public-key-for-user.k>
 ```
 
 ### Add user
 
-Send:
+Send (from user node):
 ```
-{
-  "task": "add",
-  "data": {
-    "password": "master-password-for-admin",
-    "pubkey": "public-key-for-new-user.k"
-  }
-}
+add
+```
+
+Send (using admin):
+```
+add <master-password-for-admin> <cjdns-ipv6-address>
 ```
 
 Get:
 ```
-{
-  "error": null,
-  "data": {
-    "token": "token-for-user-registration"
-  },
-  "status": 1
-}
+success <ipv4-address-here> <ipv6-address-here> 
 ```
