@@ -141,8 +141,6 @@ func (s *Server) taskFactory(conn net.Conn, input string) tasks.TaskInterface {
 		return tasks.Remove{t}
 	case "lease":
 		return tasks.Lease{t}
-	case "release":
-		return tasks.Release{t}
 	}
 
 	return tasks.Invalid{t}
