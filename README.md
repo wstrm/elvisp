@@ -5,11 +5,15 @@ Elvisp distributes a public IPv6 address in a cjdns-based IP tunnel using the pu
 
 ### Tasks implemented
  - [x] `add`
+  - [x] Admin support
  - [x] `remove`
+  - [x] Admin support
  - [x] `lease`
+  - [x] Admin support
 
 ### TODO
  - [ ] Tests
+ - [ ] Elvisp client - automatic registration and leasing
 
 ### Supported cjdns versions
 __Elvisp requires the follwing cjdns admin methods:__
