@@ -117,7 +117,7 @@ func (t Add) allowIPTunnel(l lease.Lease, id uint64) (ip net.IP, err error) {
 		return
 	}
 
-	return // Ignore empty CIDR
+	return
 }
 
 // Run adds a user using the public key and a token
@@ -170,15 +170,6 @@ func (t Lease) Run() string {
 	}
 
 	return t.successString("<<LEASED ADDRESS HERE>>")
-}
-
-// Run releases a lease from a user
-func (t Release) Run() string {
-	if len(t.argv) != 2 {
-		return t.errorString(errorInvalidLength)
-	}
-
-	return t.successString("Released lease for user: " + t.argv[0])
 }
 
 // Run returns a Invalid Task error
