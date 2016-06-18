@@ -20,7 +20,7 @@ lease
 
 Send (using admin):
 ```
-lease <master-password-for-admin> <public-key-for-user.k>
+lease <master-password-for-admin> <cjdns-ipv6-address>
 ```
 
 Get:
@@ -37,7 +37,7 @@ remove
 
 Send (using admin):
 ```
-remove <master-password-for-admin> <public-key-for-user.k>
+remove <master-password-for-admin> <cjdns-ipv6-address>
 ```
 
 Get:
@@ -54,7 +54,7 @@ add
 
 Send (using admin):
 ```
-add <master-password-for-admin> <public-key-for-user.k>
+add <master-password-for-admin> <cjdns-ipv6-address>
 ```
 
 Get:

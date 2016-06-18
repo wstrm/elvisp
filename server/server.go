@@ -56,7 +56,21 @@ func (s *Server) initAdmin(password string) error {
 	return s.db.SetAdmin(string(hash))
 }
 
-// parseCjdnsIPv6 takes a string and converts it into a IPv6 and checks if it's part of the cjdns address space.
+// validCjdnsIPv6 checks if a IPv6 is within the cjdns address space.
+func validCjdnsIPv6(ip net.IP) (err error) {
+	if ip.To4() != nil { // If able to parse to IPv4 the address is invalid.
+		err = errors.New(ip.String() + "is not IPv6")
+		return
+	}
+
+	if ip.To16()[0] != 0xFC { // If the first bit is not 0xFC then it's not in the cjdns address space.
+		err = errors.New(ip.String() + " is not in the cjdns address space (0xFC)")
+	}
+
+	return
+}
+
+// resolveCjdnsIPv6 revoles the connecting IPv6 using the TCP address and checks if it's part of the cjdns address space.
 func parseCjdnsIPv6(addr string) (ip net.IP, err error) {
 	tcpAddr, err := net.ResolveTCPAddr("tcp6", addr)
 	if err != nil {
@@ -64,16 +78,7 @@ func parseCjdnsIPv6(addr string) (ip net.IP, err error) {
 	}
 
 	ip = tcpAddr.IP
-
-	str := ip.String()
-
-	if ip.To4() != nil { // If able to parse to IPv4 the address is invalid.
-		err = errors.New(ip.String() + "is not IPv6")
-		return
-	}
-	if ip.To16()[0] != 0xFC { // If the first bit is not 0xFC then it's not in the cjdns address space.
-		err = errors.New(str + " is not in the cjdns address space (0xFC)")
-	}
+	err = validCjdnsIPv6(ip)
 
 	return
 }
@@ -87,7 +92,9 @@ func (s *Server) taskFactory(conn net.Conn, input string) tasks.TaskInterface {
 		return tasks.Invalid{t}
 	}
 
-	var password, address string
+	var password string
+	var ipv6 net.IP
+	var err error
 
 	cmd := strings.ToLower(array[0])
 	argv := array[1:]
@@ -96,7 +103,15 @@ func (s *Server) taskFactory(conn net.Conn, input string) tasks.TaskInterface {
 	// If longer than 3, the second element should be a password for the administrator, and the third the address.
 	if len(array) == 3 {
 		password = array[1]
-		address = array[2]
+		ipv6 = net.ParseIP(array[2])
+		if ipv6 == nil {
+			return tasks.Invalid{t}
+		}
+
+		err = validCjdnsIPv6(ipv6)
+		if err != nil {
+			return tasks.Invalid{t}
+		}
 
 		if err := s.authAdmin(password); err != nil {
 			log.Printf("Failed to authenticate administrator: %s", err)
@@ -107,13 +122,11 @@ func (s *Server) taskFactory(conn net.Conn, input string) tasks.TaskInterface {
 		auth = true
 	} else {
 		// If not admin, use the remote address that is currently connecting.
-		address = conn.RemoteAddr().String()
-	}
-
-	ipv6, err := parseCjdnsIPv6(address)
-	if err != nil {
-		log.Printf("Unable to resolve IPv6: %s", err)
-		return tasks.Invalid{t}
+		ipv6, err = parseCjdnsIPv6(conn.RemoteAddr().String())
+		if err != nil {
+			log.Printf("Unable to resolve IPv6: %s", err)
+			return tasks.Invalid{t}
+		}
 	}
 
 	context := tasks.Context{
