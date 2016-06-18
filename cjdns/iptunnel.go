@@ -11,11 +11,13 @@ import (
 func (c *Conn) AddUser(publicKey *key.Public, ip net.IP) error {
 	admin := c.Conn
 
+	log.Println(ip)
+
 	if err := admin.IpTunnel_allowConnection(publicKey, ip); err != nil {
 		return err
 	}
 
-	log.Printf("User: %s added to cjdns IP tunnel", publicKey.String())
+	log.Printf("User: %s added to cjdns IP tunnel with IP: %s", publicKey.String(), ip.String())
 
 	return nil
 }

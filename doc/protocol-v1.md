@@ -25,8 +25,7 @@ lease <master-password-for-admin> <public-key-for-user.k>
 
 Get:
 ```
-success ipv6 <ipv6-address-here>
-success ipv4 <ipv4-address-here>
+success <ipv4-address-here> <ipv6-address-here>
 ```
 
 ### Remove user
@@ -77,5 +76,5 @@ add <master-password-for-admin> <public-key-for-user.k>
 
 Get:
 ```
-success Added user: <public-key-for-user.k>
+success <ipv4-address-here> <ipv6-address-here> 
 ```

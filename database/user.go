@@ -9,16 +9,26 @@ import (
 	"github.com/ehmry/go-cjdns/key"
 )
 
-// usersBucket defines the namespace for the user bucket
+// usersBucket defines the namespace for the user bucket.
 const usersBucket = "Users"
 
-// uint64ToBin returns an 8-byte big endian representation of v
+// uint64ToBin returns an 8-byte big endian representation of v.
 func uint64ToBin(v uint64) []byte {
 	b := make([]byte, 8)
 	binary.BigEndian.PutUint64(b, v)
 	return b
 }
 
+// binToUint64 takes an 8-byte big endian and converts it into a uint64.
+func binToUint64(v []byte) uint64 {
+	if len(v) <= 4 {
+		return uint64(binary.BigEndian.Uint32(v))
+	}
+
+	return binary.BigEndian.Uint64(v)
+}
+
+// userExists takes a identifier and tries to type cast it into either a public key or a uint64, and then lookups that identifier in the database.
 func (db *Database) userExists(identifier interface{}) (pos []byte, exists bool) {
 	err := db.View(func(tx *Tx) error {
 		bucket := tx.Bucket([]byte(usersBucket))
@@ -63,8 +73,35 @@ func (db *Database) userExists(identifier interface{}) (pos []byte, exists bool)
 	return
 }
 
+// nextUserID iterates over all users and tries to find a available slot between users, if there is no available it will return the next sequence available after all users.
+func (db *Database) nextUserID() (id uint64, err error) {
+	err = db.View(func(tx *Tx) error {
+		bucket := tx.Bucket([]byte(usersBucket))
+
+		cursor := bucket.Cursor()
+		lastID := uint64(0)
+		for currentID, _ := cursor.First(); currentID != nil; currentID, _ = cursor.Next() {
+
+			log.Printf("current ID: %v", binToUint64(currentID))
+			// The current ID is larger than the last found ID, this means that there is a "gap" that can be filled,
+			// so we'll stop the iteration and use the last ID + 1 as it's available.
+			if binToUint64(currentID) > lastID+1 {
+				break
+			}
+
+			lastID = binToUint64(currentID)
+		}
+
+		id = lastID + 1
+
+		return nil
+	})
+
+	return
+}
+
 // AddUser inserts a new user into the UserBucket with public key and ID (used as seed for lease).
-func (db *Database) AddUser(pubkey *key.Public) (id uint, err error) {
+func (db *Database) AddUser(pubkey *key.Public) (id uint64, err error) {
 	k := pubkey.String()
 
 	_, exists := db.userExists(pubkey)
@@ -77,12 +114,15 @@ func (db *Database) AddUser(pubkey *key.Public) (id uint, err error) {
 	err = db.Update(func(tx *Tx) error {
 
 		bucket := tx.Bucket([]byte(usersBucket))
-		seq, _ := bucket.NextSequence()
-		id = uint(seq)
+
+		id, err = db.nextUserID()
+		if err != nil {
+			return err
+		}
 
 		log.Printf("Adding new user with key: %s and ID: %d", k, id)
 
-		return bucket.Put(uint64ToBin(seq), []byte(k)) // End of transaction after data is put
+		return bucket.Put(uint64ToBin(id), []byte(k)) // End of transaction after data is put
 	})
 
 	return
