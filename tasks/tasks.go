@@ -22,25 +22,43 @@ type TaskInterface interface {
 
 // Task needs the arguments to use, and a database to save the changes to
 type Task struct {
-	argv   []string
-	db     *database.Database
-	admin  *cjdns.Conn
-	ip     net.IP
-	pubkey *key.Public
-	auth   bool
+	argv                 []string
+	db                   *database.Database
+	admin                *cjdns.Conn
+	clientIP             net.IP
+	ipv4, ipv6           bool
+	ipv4Lease, ipv6Lease lease.Lease
+	pubkey               *key.Public
+	auth                 bool
+}
+
+// Context holds current settings for the task that should be initialized with Init().
+type Context struct {
+	Argv                 []string
+	DB                   *database.Database
+	Admin                *cjdns.Conn
+	ClientIP             net.IP
+	Auth                 bool
+	IPv4, IPv6           bool
+	IPv4Lease, IPv6Lease lease.Lease
 }
 
 // Init returns a new task
-func Init(argv []string, db *database.Database, admin *cjdns.Conn, ip net.IP, auth bool) (task Task, err error) {
-	task.argv = argv
-	task.ip = ip
-	task.auth = auth
+func Init(context Context) (task Task, err error) {
+	task.argv = context.Argv
+	task.clientIP = context.ClientIP
+	task.auth = context.Auth
+	task.admin = context.Admin
+	task.ipv4 = context.IPv4
+	task.ipv6 = context.IPv6
+	task.ipv4Lease = context.IPv4Lease
+	task.ipv6Lease = context.IPv6Lease
 
 	var k string
-	if auth {
-		k = argv[0]
+	if context.Auth {
+		k = context.Argv[0]
 	} else {
-		k, err = admin.LookupPubKey(ip.String())
+		k, err = task.admin.LookupPubKey(context.ClientIP.String())
 
 		if err != nil {
 			return task, err
@@ -52,8 +70,8 @@ func Init(argv []string, db *database.Database, admin *cjdns.Conn, ip net.IP, au
 		return task, err
 	}
 
-	task.db = db
-	task.admin = admin
+	task.db = context.DB
+	task.admin = context.Admin
 
 	return
 }
@@ -83,32 +101,49 @@ type Release struct{ Task }
 // Invalid should implement an invalid task which is returned if no task could be found for a command
 type Invalid struct{ Task }
 
-// Run adds a user using the public key and a token
-func (t Add) Run() string {
-	db := t.db
-	admin := t.admin
-	pubkey := t.pubkey
+// allowIPTunnel adds the defined IP to the cjdns IP tunnel, if it fails, it will delete the user from the database.
+func (t Add) allowIPTunnel(l lease.Lease, id uint64) (ip net.IP, err error) {
 
-	id, err := db.AddUser(pubkey)
+	ip, err = lease.Generate(l, id)
 	if err != nil {
-		return t.errorString(err.Error())
+		return
 	}
 
-	ip, err := lease.Generate("192.168.1.0/24", id)
-	if err != nil {
-		return t.errorString(err.Error())
-	}
-
-	if err := admin.AddUser(pubkey, ip); err != nil {
-		// If we failed to add the user, delete it from the database.
-		if e := db.DelUser(pubkey); e != nil {
-			log.Println(e)
+	if err = t.admin.AddUser(t.pubkey, ip); err != nil {
+		if e := t.db.DelUser(t.pubkey); e != nil {
+			log.Println(err)
 		}
 
+		return
+	}
+
+	return // Ignore empty CIDR
+}
+
+// Run adds a user using the public key and a token
+func (t Add) Run() string {
+	var id uint64
+	var ipv4, ipv6 net.IP
+	var err error
+
+	id, err = t.db.AddUser(t.pubkey)
+	if err != nil {
 		return t.errorString(err.Error())
 	}
 
-	return t.successString(ip.String())
+	if t.ipv4 {
+		if ipv4, err = t.allowIPTunnel(t.ipv4Lease, id); err != nil {
+			return t.errorString(err.Error())
+		}
+	}
+
+	if t.ipv6 {
+		if ipv6, err = t.allowIPTunnel(t.ipv6Lease, id); err != nil {
+			return t.errorString(err.Error())
+		}
+	}
+
+	return t.successString(ipv4.String() + " " + ipv6.String())
 }
 
 // Run removes a user

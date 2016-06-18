@@ -3,7 +3,7 @@ package database
 import "log"
 
 // adminBucket defines the namespace for the admin bucket
-const adminBucket = "Users"
+const adminBucket = "Admin"
 
 // hashKey defines the key for storing hashed administration password
 const hashKey = "hash"
