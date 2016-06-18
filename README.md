@@ -3,56 +3,30 @@
 # Elvisp (Work in Progress)
 Elvisp distributes a public IPv6 address in a cjdns-based IP tunnel using the public key that each user provides. It will add the user's assigned address with cjdns' admin API. Elvisp then returns the public key for the cjdns instance that acts like the tunnel.
 
-##TODO
-* Registration
-* Unit testing
-* Both IPv4/6 at the same time
-* Documentation
+### Tasks implemented
+ - [x] `add`
+ - [x] `remove`
+ - [x] `lease`
 
-##API
-####Status codes
-* Error: 0
-* Success: 1
+### TODO
+ - [ ] Tests
 
-###Send
-Data that is sent should be formated as JSON, and contain a password for authorization to the server, and a pubkey for the registration (also used as an user name). The misc field is optional, but can contain any string.
+### Supported cjdns versions
+__Elvisp requires the follwing cjdns admin methods:__
+ * `IpTunnel_allowConnection`
+ * `IpTunnel_listConnections`
+ * `IpTunnel_showConnection`
+ * `IpTunnel_removeConnection`
+ * `NodeStore_nodeForAddr`
+
+__Note:__
+*`IpTunnel_removeConnection` was first implemented with commit `acbb6a8` into the `crashey` branch. As of 2016-06-16 it has not been merged into the `master` branch.*
+
+__Elvisp works with *(kinda)*:__
 ```
-{
-  "password": "examplePassword",
-  "pubkey": "examplePubkey.k",
-  "misc": "Fullname: John Doe, Email: john@doe"
-}
-```
-###Receive
-####Success
-```
-{
-  "error": null,
-  "data": {
-    "address": "IPv6 address",
-    "pubkey": "serverPubKey.k"
-  },
-  "status": 1
-}
+Cjdns version: cjdns-v17.3-129-g116fa2a
+Cjdns protocol version: 17
 ```
 
-####Error
-```
-{
-  "error": "Error message",
-  "status": 0
-}
-```
-
-###Example
-```
-var net = require('net');
-
-var client = net.connect({ port: 4123 }, function() {
-  client.write(JSON.stringify({
-    password: 'Auth Pasword',
-    pubkey: 'Public key for the user',
-    misc: 'Misc information, optional'
-  }));
-});
-```
+### Protocol
+See [protocol-v1](doc/protocol-v1.md).

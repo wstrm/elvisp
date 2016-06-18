@@ -1,0 +1,7 @@
+package: github.com/willeponken/elvisp
+import:
+- package: github.com/ehmry/go-cjdns
+- package: github.com/boltdb/bolt
+- package: golang.org/x/crypto
+  subpackages:
+  - bcrypt
