@@ -55,14 +55,10 @@ func Init(context Context) (task Task, err error) {
 	task.ipv6Lease = context.IPv6Lease
 
 	var k string
-	if context.Auth {
-		k = context.Argv[0]
-	} else {
-		k, err = task.admin.LookupPubKey(context.ClientIP.String())
+	k, err = task.admin.LookupPubKey(context.ClientIP.String())
 
-		if err != nil {
-			return task, err
-		}
+	if err != nil {
+		return task, err
 	}
 
 	task.pubkey, err = key.DecodePublic(k)

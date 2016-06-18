@@ -8,6 +8,9 @@ Elvisp distributes a public IPv6 address in a cjdns-based IP tunnel using the pu
  - [x] `remove`
  - [x] `lease`
 
+### TODO
+ - [ ] Tests
+
 ### Supported cjdns versions
 __Elvisp requires the follwing cjdns admin methods:__
  * `IpTunnel_allowConnection`
