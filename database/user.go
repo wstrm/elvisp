@@ -21,8 +21,8 @@ func uint64ToBin(v uint64) []byte {
 
 // binToUint64 takes an 8-byte big endian and converts it into a uint64.
 func binToUint64(v []byte) uint64 {
-	if len(v) <= 4 {
-		return uint64(binary.BigEndian.Uint32(v))
+	if len(v) != 8 {
+		log.Fatalf("Invalid length of binary: %d", len(v))
 	}
 
 	return binary.BigEndian.Uint64(v)
@@ -106,7 +106,7 @@ func (db *Database) AddUser(pubkey *key.Public) (id uint64, err error) {
 
 	_, exists := db.userExists(pubkey)
 	if exists {
-		err = errors.New("User with public key: " + pubkey.String() + " already exists")
+		err = fmt.Errorf("User with public key: %s already exists", k)
 		log.Println(err)
 		return
 	}
@@ -124,6 +124,20 @@ func (db *Database) AddUser(pubkey *key.Public) (id uint64, err error) {
 
 		return bucket.Put(uint64ToBin(id), []byte(k)) // End of transaction after data is put
 	})
+
+	return
+}
+
+// GetID returns the ID for a registered user.
+func (db *Database) GetID(pubkey *key.Public) (id uint64, err error) {
+	pos, exists := db.userExists(pubkey)
+	if !exists {
+		err = fmt.Errorf("User with public key: %s does not exist", pubkey.String())
+		log.Println(err)
+		return
+	}
+
+	id = binToUint64(pos)
 
 	return
 }

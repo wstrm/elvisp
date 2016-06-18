@@ -120,7 +120,7 @@ func (t Add) allowIPTunnel(l lease.Lease, id uint64) (ip net.IP, err error) {
 	return
 }
 
-// Run adds a user using the public key and a token
+// Run Add adds a user using the public key and a token.
 func (t Add) Run() string {
 	var id uint64
 	var ipv4, ipv6 net.IP
@@ -146,7 +146,7 @@ func (t Add) Run() string {
 	return t.successString(ipv4.String() + " " + ipv6.String())
 }
 
-// Run removes a user
+// Run Remove removes a user.
 func (t Remove) Run() string {
 	db := t.db
 	admin := t.admin
@@ -163,16 +163,35 @@ func (t Remove) Run() string {
 	return t.successString("Removed user: " + pubkey.String())
 }
 
-// Run leases a new address (if available)
+// Run Lease returns the users leases.
 func (t Lease) Run() string {
-	if len(t.argv) != 2 {
-		return t.errorString(errorInvalidLength)
+	var err error
+	var id uint64
+	var ipv4, ipv6 net.IP
+
+	id, err = t.db.GetID(t.pubkey)
+	if err != nil {
+		return t.errorString(err.Error())
 	}
 
-	return t.successString("<<LEASED ADDRESS HERE>>")
+	if t.ipv4 {
+		ipv4, err = lease.Generate(t.ipv4Lease, id)
+		if err != nil {
+			return t.errorString(err.Error())
+		}
+	}
+
+	if t.ipv6 {
+		ipv6, err = lease.Generate(t.ipv6Lease, id)
+		if err != nil {
+			return t.errorString(err.Error())
+		}
+	}
+
+	return t.successString(ipv4.String() + " " + ipv6.String())
 }
 
-// Run returns a Invalid Task error
+// Run Invalid returns a Invalid Task error
 func (t Invalid) Run() string {
 	return t.errorString(errorInvalidTask)
 }
