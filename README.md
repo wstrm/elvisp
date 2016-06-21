@@ -15,6 +15,40 @@ Elvisp distributes a public IPv6 address in a cjdns-based IP tunnel using the pu
  - [ ] Tests
  - [ ] Elvisp client - automatic registration and leasing
 
+### Flags
+```
+Usage of ./elvisp:
+  -cidr value
+    	CIDR to use for IP leasing, use flag repeatedly for multiple CIDR's.
+  -cjdns-ip string
+    	IP address for cjdns admin. (default "127.0.0.1")
+  -cjdns-password string
+    	Password for cjdns admin.
+  -cjdns-port int
+    	Port for cjdns admin. (default 11234)
+  -db string
+    	Directory to use for the database. (default "/tmp/elvisp-db")
+  -listen string
+    	Listen address for TCP. (default ":4132")
+  -password string
+    	Password for administrating elvisp.
+  -v	Print current version and exit.
+```
+__Example:__
+```
+/elvisp -cidr 192.168.1.0/24 -cidr 1234::0/16 -cidr 172.16.0.0/12 -cjdns-password 6c12zbnNoThisIsntMyRealPasswordn7x1
+```
+
+Which will add the users / nodes to subnets:
+ * 192.168.1.0/24
+ * 1234::0/16
+ * 172.16.0.0/12
+
+So the first user will get:
+ * 192.168.1.1
+ * 1234::1
+ * 172.16.0.1
+
 ### Supported cjdns versions
 __Elvisp requires the follwing cjdns admin methods:__
  * `IpTunnel_allowConnection`
