@@ -136,16 +136,14 @@ func (s *Server) taskFactory(conn net.Conn, input string) (task tasks.TaskInterf
 	switch cmd {
 	case "add":
 		task = tasks.Add{t}
-		return
 	case "remove":
 		task = tasks.Remove{t}
-		return
 	case "lease":
 		task = tasks.Lease{t}
-		return
+	default:
+		err = fmt.Errorf("No task found for command: %s", cmd)
 	}
 
-	err = fmt.Errorf("No task found for command: %s", cmd)
 	return
 }
 
