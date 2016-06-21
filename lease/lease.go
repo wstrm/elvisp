@@ -67,16 +67,22 @@ func withinNetwork(network *net.IPNet, ip net.IP) error {
 	return nil
 }
 
-// Lease holds a start address, the allowed network and a ID to add to the start IP.
-type Lease struct {
+// CIDR holds a start address, the allowed network and a ID to add to the start IP.
+type CIDR struct {
 	Start   net.IP
 	Network *net.IPNet
 }
 
+// ParseCIDR acts as a wrapper for net.ParseCIDR and populates a lease.CIDR struct.
+func ParseCIDR(cidr string) (c CIDR, err error) {
+	c.Start, c.Network, err = net.ParseCIDR(cidr)
+	return
+}
+
 // Generate takes the CIDR (both IPv4 and IPv6 is supported) and a ID (which is used to increment the IP address from the CIDR). Then the incremented IP address is returned.
-func Generate(l Lease, id uint64) (ip net.IP, err error) {
-	start := l.Start
-	network := l.Network
+func Generate(cidr CIDR, id uint64) (ip net.IP, err error) {
+	start := cidr.Start
+	network := cidr.Network
 
 	// Is the IP IPv4?
 	if s := start.To4(); s != nil {

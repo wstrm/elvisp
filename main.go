@@ -21,14 +21,13 @@ type flags struct {
 	cjdnsPassword string
 }
 
+// Default values for flags
 var context = flags{
-	version:       false,
-	listen:        ":4132",
-	db:            "/tmp/elvisp-db",
-	password:      "test123",
-	cjdnsIP:       "127.0.0.1",
-	cjdnsPort:     11234,
-	cjdnsPassword: "ycdzz73bn17k22c017xtdxgmq7kn7xq",
+	version:   false,
+	listen:    ":4132",
+	db:        "/tmp/elvisp-db",
+	cjdnsIP:   "127.0.0.1",
+	cjdnsPort: 11234,
 }
 
 var (
@@ -81,8 +80,7 @@ func main() {
 		CjdnsIP:       context.cjdnsIP,
 		CjdnsPort:     context.cjdnsPort,
 		CjdnsPassword: context.cjdnsPassword,
-		IPv4CIDR:      context.cidrIPv4,
-		IPv6CIDR:      context.cidrIPv6,
+		CIDRs:         []string{context.cidrIPv4, context.cidrIPv6},
 	}
 
 	log.Printf("Listening to: %s and using database at: %s", context.listen, context.db)

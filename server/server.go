@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"errors"
+	"fmt"
 	"io"
 	"log"
 	"net"
@@ -17,23 +18,27 @@ import (
 	"github.com/willeponken/elvisp/tasks"
 )
 
+const (
+	statusError   = "error"
+	statusSuccess = "success"
+)
+
 // Server holds a database and a connection to cjdns admin.
 type Server struct {
-	db                       *database.Database
-	admin                    *cjdns.Conn
-	ipv4Enabled, ipv6Enabled bool
-	ipv4Lease, ipv6Lease     lease.Lease
+	db    *database.Database
+	admin *cjdns.Conn
+	cidrs []lease.CIDR
 }
 
 // Settings holds settings needed to setup the server.
 type Settings struct {
-	Listen             string
-	DB                 string
-	Password           string
-	CjdnsIP            string
-	CjdnsPort          int
-	CjdnsPassword      string
-	IPv4CIDR, IPv6CIDR string
+	Listen        string
+	DB            string
+	Password      string
+	CjdnsIP       string
+	CjdnsPort     int
+	CjdnsPassword string
+	CIDRs         []string
 }
 
 // authAdmin checks the password with the saved hash in the database.
@@ -84,84 +89,75 @@ func parseCjdnsIPv6(addr string) (ip net.IP, err error) {
 }
 
 // taskFactory creates a new task based on an string which defines the type.
-func (s *Server) taskFactory(conn net.Conn, input string) tasks.TaskInterface {
+func (s *Server) taskFactory(conn net.Conn, input string) (task tasks.TaskInterface, err error) {
 	var t tasks.Task
 
 	array := strings.Split(input, " ")
 	if len(array) < 1 {
-		return tasks.Invalid{t}
+		err = fmt.Errorf("Invalid length for task: %d", len(array))
+		return
 	}
 
 	var password string
-	var ipv6 net.IP
-	var err error
+	var clientIP net.IP
 
 	cmd := strings.ToLower(array[0])
 	argv := array[1:]
-	auth := false
 
 	// If longer than 3, the second element should be a password for the administrator, and the third the address.
 	if len(array) == 3 {
 		password = array[1]
-		ipv6 = net.ParseIP(array[2])
-		if ipv6 == nil {
-			return tasks.Invalid{t}
+		clientIP = net.ParseIP(array[2])
+		if clientIP == nil {
+			return
 		}
 
-		err = validCjdnsIPv6(ipv6)
+		err = validCjdnsIPv6(clientIP)
 		if err != nil {
-			return tasks.Invalid{t}
+			return
 		}
 
-		if err := s.authAdmin(password); err != nil {
-			log.Printf("Failed to authenticate administrator: %s", err)
-
-			return tasks.Invalid{t}
+		if err = s.authAdmin(password); err != nil {
+			return
 		}
-
-		auth = true
 	} else {
 		// If not admin, use the remote address that is currently connecting.
-		ipv6, err = parseCjdnsIPv6(conn.RemoteAddr().String())
+		clientIP, err = parseCjdnsIPv6(conn.RemoteAddr().String())
 		if err != nil {
-			log.Printf("Unable to resolve IPv6: %s", err)
-			return tasks.Invalid{t}
+			return
 		}
 	}
 
-	context := tasks.Context{
-		Argv:      argv,
-		DB:        s.db,
-		Admin:     s.admin,
-		ClientIP:  ipv6,
-		Auth:      auth,
-		IPv4:      s.ipv4Enabled,
-		IPv6:      s.ipv6Enabled,
-		IPv4Lease: s.ipv4Lease,
-		IPv6Lease: s.ipv6Lease,
-	}
-
-	t, err = tasks.Init(context)
+	t, err = tasks.Init(argv, s.db, s.admin, clientIP, s.cidrs)
 	if err != nil {
-		log.Printf("Unable to initialize task: %s", err)
-		return tasks.Invalid{t}
+		return
 	}
 
 	switch cmd {
 	case "add":
-		return tasks.Add{t}
+		task = tasks.Add{t}
+		return
 	case "remove":
-		return tasks.Remove{t}
+		task = tasks.Remove{t}
+		return
 	case "lease":
-		return tasks.Lease{t}
+		task = tasks.Lease{t}
+		return
 	}
 
-	return tasks.Invalid{t}
+	err = fmt.Errorf("No task found for command: %s", cmd)
+	return
 }
 
 // taskRunner runs a task and inputs its output into a channel.
 func (s *Server) taskRunner(t tasks.TaskInterface, out chan string) {
-	out <- t.Run() + "\n"
+	result, err := t.Run()
+
+	if err != nil {
+		out <- fmt.Sprintf("%s %v\n", statusError, err)
+	} else {
+		out <- fmt.Sprintf("%s %s\n", statusSuccess, result)
+	}
 }
 
 // requestHandler reads from a TCP connection/session and writes it to a channel.
@@ -171,10 +167,19 @@ func (s *Server) requestHandler(conn net.Conn, out chan string) error {
 	for {
 		line, err := bufio.NewReader(conn).ReadBytes('\n')
 		if err != nil {
+			if err == io.EOF {
+				log.Printf("Disconnected: %s", conn.RemoteAddr().String())
+			}
+
 			return err
 		}
 
-		t := s.taskFactory(conn, strings.TrimRight(string(line), "\n"))
+		t, err := s.taskFactory(conn, strings.TrimRight(string(line), "\n"))
+		if err != nil {
+			log.Println(err)
+			return err
+		}
+
 		go s.taskRunner(t, out)
 	}
 }
@@ -197,28 +202,13 @@ func (s *Server) sendHandler(conn net.Conn, in <-chan string) {
 func Listen(settings Settings) (err error) {
 	var s Server
 
-	if settings.IPv4CIDR != "" {
-		var ipv4Lease lease.Lease
-
-		ipv4Lease.Start, ipv4Lease.Network, err = net.ParseCIDR(settings.IPv4CIDR)
+	var c lease.CIDR
+	for _, cidr := range settings.CIDRs {
+		c, err = lease.ParseCIDR(cidr)
 		if err != nil {
 			return
 		}
-
-		s.ipv4Enabled = true
-		s.ipv4Lease = ipv4Lease
-	}
-
-	if settings.IPv6CIDR != "" {
-		var ipv6Lease lease.Lease
-
-		ipv6Lease.Start, ipv6Lease.Network, err = net.ParseCIDR(settings.IPv6CIDR)
-		if err != nil {
-			return
-		}
-
-		s.ipv6Enabled = true
-		s.ipv6Lease = ipv6Lease
+		s.cidrs = append(s.cidrs, c)
 	}
 
 	// First, we need to make sure we are able to communicate with the database.
@@ -258,6 +248,8 @@ func Listen(settings Settings) (err error) {
 
 			continue
 		}
+
+		log.Printf("New connection: %s", conn.RemoteAddr().String())
 
 		channel := make(chan string)
 
