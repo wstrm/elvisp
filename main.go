@@ -9,13 +9,14 @@ import (
 	"github.com/willeponken/elvisp/server"
 )
 
+type cidrList []string
+
 type flags struct {
 	version       bool
 	listen        string
 	db            string
 	password      string
-	cidrIPv4      string
-	cidrIPv6      string
+	cidrList      cidrList
 	cjdnsIP       string
 	cjdnsPort     int
 	cjdnsPassword string
@@ -37,6 +38,28 @@ var (
 	BuildTime string
 )
 
+// List cidrList lists all the CIDR's as a slice of strings
+func (c cidrList) List() (cidrs []string) {
+	for _, cidr := range c {
+		cidrs = append(cidrs, cidr)
+	}
+	return
+}
+
+// String cidrList stringifies the list of CIDR's
+func (c *cidrList) String() (str string) {
+	for _, cidr := range c.List() {
+		str += cidr + " "
+	}
+	return str
+}
+
+// Set cidrList appends the list of CIDR's with a new string (hopefully a CIDR)
+func (c *cidrList) Set(cidr string) error {
+	*c = append(*c, cidr)
+	return nil
+}
+
 func init() {
 
 	flag.StringVar(&context.listen, "listen", context.listen, "Listen address for TCP.")
@@ -44,8 +67,8 @@ func init() {
 	flag.StringVar(&context.password, "password", context.password, "Password for administrating elvisp.")
 	flag.StringVar(&context.cjdnsIP, "cjdns-ip", context.cjdnsIP, "IP address for cjdns admin.")
 	flag.StringVar(&context.cjdnsPassword, "cjdns-password", context.cjdnsPassword, "Password for cjdns admin.")
-	flag.StringVar(&context.cidrIPv4, "cidr-v4", context.cidrIPv4, "IPv4 CIDR to use for IP Leasing.")
-	flag.StringVar(&context.cidrIPv6, "cidr-v6", context.cidrIPv6, "IPv6 CIDR to use for IP leasing.")
+
+	flag.Var(&context.cidrList, "cidr", "CIDR to use for IP leasing, use flag repeatedly for multiple CIDR's.")
 
 	flag.BoolVar(&context.version, "v", context.version, "Print current version and exit.")
 
@@ -64,7 +87,7 @@ func init() {
 	// Prefix log output with "[elvisp (<version>)]".
 	log.SetPrefix("[\033[32melvisp\033[0m (" + Version + ")] ")
 
-	if context.cidrIPv4 == "" && context.cidrIPv6 == "" {
+	if len(context.cidrList) < 1 {
 		log.Fatalln("Atleast one CIDR has to be defined")
 	}
 
@@ -80,7 +103,7 @@ func main() {
 		CjdnsIP:       context.cjdnsIP,
 		CjdnsPort:     context.cjdnsPort,
 		CjdnsPassword: context.cjdnsPassword,
-		CIDRs:         []string{context.cidrIPv4, context.cidrIPv6},
+		CIDRs:         context.cidrList.List(),
 	}
 
 	log.Printf("Listening to: %s and using database at: %s", context.listen, context.db)
