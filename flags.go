@@ -33,7 +33,7 @@ func (c *cidrList) String() (str string) {
 	for _, cidr := range c.List() {
 		str += cidr + " "
 	}
-	return str
+	return
 }
 
 // Set cidrList appends the list of CIDR's with a new string (hopefully a CIDR)
