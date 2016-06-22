@@ -89,13 +89,14 @@ func parseCjdnsIPv6(addr string) (ip net.IP, err error) {
 }
 
 // taskFactory creates a new task based on an string which defines the type.
-func (s *Server) taskFactory(conn net.Conn, input string) (task tasks.TaskInterface, err error) {
+func (s *Server) taskFactory(conn net.Conn, input string) (task tasks.TaskInterface) {
 	var t tasks.Task
+	var err error
 
 	array := strings.Split(input, " ")
 	if len(array) < 1 {
 		err = fmt.Errorf("Invalid length for task: %d", len(array))
-		return
+		return tasks.Invalid{err}
 	}
 
 	var password string
@@ -109,28 +110,28 @@ func (s *Server) taskFactory(conn net.Conn, input string) (task tasks.TaskInterf
 		password = array[1]
 		clientIP = net.ParseIP(array[2])
 		if clientIP == nil {
-			return
+			return tasks.Invalid{err}
 		}
 
 		err = validCjdnsIPv6(clientIP)
 		if err != nil {
-			return
+			return tasks.Invalid{err}
 		}
 
 		if err = s.authAdmin(password); err != nil {
-			return
+			return tasks.Invalid{err}
 		}
 	} else {
 		// If not admin, use the remote address that is currently connecting.
 		clientIP, err = parseCjdnsIPv6(conn.RemoteAddr().String())
 		if err != nil {
-			return
+			return tasks.Invalid{err}
 		}
 	}
 
 	t, err = tasks.Init(argv, s.db, s.admin, clientIP, s.cidrs)
 	if err != nil {
-		return
+		return tasks.Invalid{err}
 	}
 
 	switch cmd {
@@ -141,7 +142,7 @@ func (s *Server) taskFactory(conn net.Conn, input string) (task tasks.TaskInterf
 	case "lease":
 		task = tasks.Lease{t}
 	default:
-		err = fmt.Errorf("No task found for command: %s", cmd)
+		task = tasks.Invalid{fmt.Errorf("No task found for command: %s", cmd)}
 	}
 
 	return
@@ -172,11 +173,7 @@ func (s *Server) requestHandler(conn net.Conn, out chan string) error {
 			return err
 		}
 
-		t, err := s.taskFactory(conn, strings.TrimRight(string(line), "\n"))
-		if err != nil {
-			log.Println(err)
-			return err
-		}
+		t := s.taskFactory(conn, strings.TrimRight(string(line), "\n"))
 
 		go s.taskRunner(t, out)
 	}

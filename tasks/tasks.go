@@ -66,6 +66,9 @@ type Lease struct{ Task }
 // Release should implement the release task
 type Release struct{ Task }
 
+// Invalid should implement the invalid task, i.e. take an error
+type Invalid struct{ Error error }
+
 // allowIPTunnel adds the defined IP to the cjdns IP tunnel, if it fails, it will delete the user from the database.
 func (t Add) allowIPTunnel(c lease.CIDR, id uint64) (ip net.IP, err error) {
 
@@ -144,5 +147,11 @@ func (t Lease) Run() (result string, err error) {
 		result += ip.String() + " "
 	}
 
+	return
+}
+
+// Run Invalid returns an error and empty result.
+func (t Invalid) Run() (result string, err error) {
+	err = t.Error
 	return
 }

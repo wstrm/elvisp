@@ -3,18 +3,6 @@
 # Elvisp (Work in Progress)
 Elvisp distributes a public IPv6 address in a cjdns-based IP tunnel using the public key that each user provides. It will add the user's assigned address with cjdns' admin API. Elvisp then returns the public key for the cjdns instance that acts like the tunnel.
 
-### Tasks implemented
- - [x] `add`
-  - [x] Admin support
- - [x] `remove`
-  - [x] Admin support
- - [x] `lease`
-  - [x] Admin support
-
-### TODO
- - [ ] Tests
- - [ ] Elvisp client - automatic registration and leasing
-
 ### Flags
 ```
 Usage of ./elvisp:
