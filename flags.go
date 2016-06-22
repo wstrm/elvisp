@@ -46,7 +46,7 @@ func init() {
 
 	flag.StringVar(&context.listen, "listen", context.listen, "Listen address for TCP.")
 	flag.StringVar(&context.db, "db", context.db, "Directory to use for the database.")
-	flag.StringVar(&context.password, "password", context.password, "Password for administrating elvisp.")
+	flag.StringVar(&context.password, "password", context.password, "Password for administrating Elvisp.")
 	flag.StringVar(&context.cjdnsIP, "cjdns-ip", context.cjdnsIP, "IP address for cjdns admin.")
 	flag.StringVar(&context.cjdnsPassword, "cjdns-password", context.cjdnsPassword, "Password for cjdns admin.")
 

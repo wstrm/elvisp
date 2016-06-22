@@ -31,7 +31,7 @@ Usage of ./elvisp:
   -listen string
     	Listen address for TCP. (default ":4132")
   -password string
-    	Password for administrating elvisp.
+    	Password for administrating Elvisp.
   -v	Print current version and exit.
 ```
 __Example:__
