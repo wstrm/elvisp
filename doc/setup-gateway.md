@@ -50,7 +50,7 @@ echo "net.ipv4.all.forwarding=1" >> /etc/sysctl.conf
 Now the only thing left is to run Elvisp with the correct flags:
 ```./elvisp -cidr fd12:3456::10/64 -cidr 172.28.0.10/16 -password ElvispAdminPasswordHere -cjdns-password cjdnsAdminPasswordHere```
 
-Change the cjdns password and set a good administration password. Also notice how the CIDR's start at `::10` and `.10`, Elvsip will start to lease IP addresses after these. Meaning the first user will get: `::11` and `.10`.
+Change the cjdns password and set a good administration password. Also notice how the CIDR's start at `::10` and `.10`, Elvsip will start to lease IP addresses after these. Meaning the first user will get: `::11` and `.11`.
 
 We're done!
 
