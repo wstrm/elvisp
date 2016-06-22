@@ -1,11 +1,6 @@
 package main
 
-import (
-	"flag"
-	"fmt"
-	"log"
-	"os"
-)
+import "flag"
 
 type cidrList []string
 
@@ -33,6 +28,9 @@ func (c *cidrList) String() (str string) {
 	for _, cidr := range c.List() {
 		str += cidr + " "
 	}
+	if len(str) > 1 {
+		str = str[:(len(str) - 1)] // Trim superflous whitespace at end
+	}
 	return
 }
 
@@ -57,16 +55,6 @@ func init() {
 	flag.IntVar(&context.cjdnsPort, "cjdns-port", context.cjdnsPort, "Port for cjdns admin.")
 
 	flag.Parse()
-
-	// If version flag is true, print version and exit.
-	if context.version {
-		fmt.Printf("%s (%s)\n", Version, BuildTime)
-		os.Exit(0)
-	}
-
-	if len(context.cidrList) < 1 {
-		log.Fatalln("Atleast one CIDR has to be defined")
-	}
 
 	return
 }

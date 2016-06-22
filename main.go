@@ -1,7 +1,9 @@
 package main
 
 import (
+	"fmt"
 	"log"
+	"os"
 
 	"github.com/willeponken/elvisp/server"
 )
@@ -30,6 +32,16 @@ func init() {
 }
 
 func main() {
+
+	// If version flag is true, print version and exit.
+	if context.version {
+		fmt.Printf("%s (%s)\n", Version, BuildTime)
+		os.Exit(0)
+	}
+
+	if len(context.cidrList) < 1 {
+		log.Fatalln("Atleast one CIDR has to be defined")
+	}
 
 	settings := server.Settings{
 		Listen:        context.listen,
