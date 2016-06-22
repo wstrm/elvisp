@@ -9,13 +9,14 @@ BUILD_TIME=`date +%FT%T%z`
 
 LDFLAGS=-ldflags "-X main.Version=${VERSION} -X main.BuildTime=${BUILD_TIME}"
 
-.PHONY: install deploy clean build init test
+.PHONY: install deploy clean build init test get-deps
 
 all: init build test
 build: $(SOURCES)
 	go build ${LDFLAGS} -o ${BINARY}
 
 init:
+	go get github.com/Masterminds/glide
 	glide install
 
 install:

@@ -3,4 +3,4 @@ language: go
 go:
   - tip
 
-install: make get-deps glide
+install: make
