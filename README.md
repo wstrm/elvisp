@@ -54,5 +54,6 @@ Cjdns version: cjdns-v17.3-129-g116fa2a
 Cjdns protocol version: 17
 ```
 
-### Protocol
-See [protocol-v1](doc/protocol-v1.md).
+### Documentation
+ * Protocol [protocol-v1](doc/protocol-v1.md)
+ * Setup a gateway [setup-gateway](doc/setup-gateway.md)
