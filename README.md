@@ -24,7 +24,7 @@ Usage of ./elvisp:
 ```
 __Example:__
 ```
-/elvisp -cidr 192.168.1.0/24 -cidr 1234::0/16 -cidr 172.16.0.0/12 -cjdns-password 6c12zbnNoThisIsntMyRealPasswordn7x1
+./elvisp -cidr 192.168.1.0/24 -cidr 1234::0/16 -cidr 172.16.0.0/12 -cjdns-password 6c12zbnNoThisIsntMyRealPasswordn7x1
 ```
 
 Which will add the users / nodes to subnets:
