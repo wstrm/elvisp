@@ -3,7 +3,7 @@ SOURCES := $(shell find $(SOURCEDIR) -name '*.go')
 
 BINARY=elvisp
 
-VERSION=2.0.0-alpha
+VERSION=`<./VERSION`
 BUILD_TIME=`date +%FT%T%z`
 
 

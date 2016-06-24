@@ -1,12 +1,13 @@
 # Protocol / API
 
-### Error codes
-  * `1` Invalid task specified
-  * `2` Invalid length of arguments
-
 ### Standard error
 ```
-error <error code> <error message>
+error <error message>
+```
+
+### Standard success
+```
+success <success message>
 ```
 
 ## Tasks
