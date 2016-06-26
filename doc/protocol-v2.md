@@ -1,4 +1,4 @@
-# Protocol / API
+# Protocol / API v2
 
 ### Standard error
 ```

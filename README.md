@@ -55,5 +55,5 @@ Cjdns protocol version: 17
 ```
 
 ### Documentation
- * Protocol [protocol-v1](doc/protocol-v1.md)
+ * Protocol [protocol-v2](doc/protocol-v2.md)
  * Setup a gateway [setup-gateway](doc/setup-gateway.md)
