@@ -3,13 +3,15 @@ SOURCES := $(shell find $(SOURCEDIR) -name '*.go')
 
 BINARY=elvisp
 
+TESTPKGS=./ ./lease
+
 VERSION=`<./VERSION`
 BUILD_TIME=`date +%FT%T%z`
 
 
 LDFLAGS=-ldflags "-X main.Version=${VERSION} -X main.BuildTime=${BUILD_TIME}"
 
-.PHONY: install deploy clean build init test get-deps
+.PHONY: install deploy clean build init test race
 
 all: init build test
 build: $(SOURCES)
@@ -29,4 +31,7 @@ clean:
 	if [ -f ${BINARY} ] ; then rm ${BINARY} ; fi
 
 test:
-	go test ./ ./lease
+	go test ${TESTPKGS}
+
+race:
+	go test -race ${TESTPKGS}
