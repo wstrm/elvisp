@@ -3,7 +3,7 @@ SOURCES := $(shell find $(SOURCEDIR) -name '*.go')
 
 BINARY=elvisp
 
-TESTPKGS=./ ./lease
+TESTPKGS=./ ./lease ./database
 
 VERSION=`<./VERSION`
 BUILD_TIME=`date +%FT%T%z`

@@ -26,10 +26,9 @@ func setupDatabase() {
 }
 
 func TestMain(m *testing.M) {
-	populateMockUsers()
-
 	runResult := m.Run()
 
 	removeDatabase() // Clean up the database
+
 	os.Exit(runResult)
 }

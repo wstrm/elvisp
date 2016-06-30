@@ -82,7 +82,6 @@ func (db *Database) nextUserID() (id uint64, err error) {
 		lastID := uint64(0)
 		for currentID, _ := cursor.First(); currentID != nil; currentID, _ = cursor.Next() {
 
-			log.Printf("current ID: %v", binToUint64(currentID))
 			// The current ID is larger than the last found ID, this means that there is a "gap" that can be filled,
 			// so we'll stop the iteration and use the last ID + 1 as it's available.
 			if binToUint64(currentID) > lastID+1 {

@@ -14,8 +14,6 @@ type mockUser struct {
 	invalid bool
 }
 
-var mockUsers []mockUser
-
 var binUint64Tests = []struct {
 	v uint64
 	b []byte
@@ -24,7 +22,7 @@ var binUint64Tests = []struct {
 	{18446744073709551616 - 1, []byte{255, 255, 255, 255, 255, 255, 255, 255}},
 }
 
-func populateMockUsers() {
+func generateDuplicateUsers() (mockUsers []mockUser) {
 	var err error
 	var key1, key2 *key.Public
 
@@ -39,6 +37,20 @@ func populateMockUsers() {
 	user2 := mockUser{key2, 1, true}
 
 	mockUsers = append(mockUsers, user1, user2)
+
+	return
+}
+
+func generateManyUsers(numUsers int) []mockUser {
+
+	mockUsers := make([]mockUser, numUsers)
+	for i := 0; i < numUsers; i++ {
+		mockPubKey := key.Generate().Pubkey()
+
+		mockUsers[i] = mockUser{mockPubKey, uint64(i + 1), false}
+	}
+
+	return mockUsers
 }
 
 func TestUint64ToBin(t *testing.T) {
@@ -61,8 +73,9 @@ func TestBinToUint64(t *testing.T) {
 	}
 }
 
-func TestAddUser(t *testing.T) {
+func TestAddUserDuplicate(t *testing.T) {
 	setupDatabase()
+	mockUsers := generateDuplicateUsers()
 
 	for row, test := range mockUsers {
 		id, err := testDB.AddUser(test.pubkey)
@@ -84,21 +97,16 @@ func TestAddUser(t *testing.T) {
 	}
 }
 
-func addUsersToDB() {
-	for _, user := range mockUsers {
-		_, err := testDB.AddUser(user.pubkey)
-		if err != nil && !user.invalid {
-			log.Fatalf("Error while adding mock users: %v", err)
-		}
+func TestAddUserMany(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping test in short mode")
 	}
-}
 
-func TestDelUser(t *testing.T) {
 	setupDatabase()
-	addUsersToDB()
+	mockUsers := generateManyUsers(1000)
 
 	for row, test := range mockUsers {
-		err := testDB.DelUser(test.id)
+		id, err := testDB.AddUser(test.pubkey)
 
 		// Got error, but it should be a valid call
 		if err != nil && !test.invalid {
@@ -107,26 +115,10 @@ func TestDelUser(t *testing.T) {
 
 		// Got no error, but it shouldn't be a valid call
 		if err == nil && test.invalid {
-			t.Errorf("Row: %d expected error but got nil", row)
-		}
-	}
-}
-
-func TestGetID(t *testing.T) {
-	setupDatabase()
-	addUsersToDB()
-
-	for row, test := range mockUsers {
-		id, err := testDB.GetID(test.pubkey)
-
-		if err != nil && !test.invalid {
-			t.Errorf("Row: %d returned unexpected error: %v, got id: %d", row, err, id)
-		}
-
-		if err == nil && test.invalid && id != test.id {
 			t.Errorf("Row: %d expected error but got id: %v", row, id)
 		}
 
+		// Got wrong id, and the call should be valid (i.e. we expect the correct id)
 		if id != test.id && !test.invalid {
 			t.Errorf("Row: %d unexpected id, got id: %d, wanted id: %d", row, id, test.id)
 		}
