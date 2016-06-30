@@ -1,6 +1,9 @@
 package: github.com/willeponken/elvisp
 import:
-- package: github.com/ehmry/go-cjdns
+- package: github.com/fc00/go-cjdns
+  subpackages:
+  - key
+  - admin
 - package: github.com/boltdb/bolt
 - package: golang.org/x/crypto
   subpackages:

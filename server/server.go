@@ -96,7 +96,7 @@ func (s *Server) taskFactory(conn net.Conn, input string) (task tasks.TaskInterf
 	array := strings.Split(input, " ")
 	if len(array) < 1 {
 		err = fmt.Errorf("Invalid length for task: %d", len(array))
-		return tasks.Invalid{err}
+		return tasks.Invalid{Error: err}
 	}
 
 	var password string
@@ -110,39 +110,39 @@ func (s *Server) taskFactory(conn net.Conn, input string) (task tasks.TaskInterf
 		password = array[1]
 		clientIP = net.ParseIP(array[2])
 		if clientIP == nil {
-			return tasks.Invalid{err}
+			return tasks.Invalid{Error: err}
 		}
 
 		err = validCjdnsIPv6(clientIP)
 		if err != nil {
-			return tasks.Invalid{err}
+			return tasks.Invalid{Error: err}
 		}
 
 		if err = s.authAdmin(password); err != nil {
-			return tasks.Invalid{err}
+			return tasks.Invalid{Error: err}
 		}
 	} else {
 		// If not admin, use the remote address that is currently connecting.
 		clientIP, err = parseCjdnsIPv6(conn.RemoteAddr().String())
 		if err != nil {
-			return tasks.Invalid{err}
+			return tasks.Invalid{Error: err}
 		}
 	}
 
 	t, err = tasks.Init(argv, s.db, s.admin, clientIP, s.cidrs)
 	if err != nil {
-		return tasks.Invalid{err}
+		return tasks.Invalid{Error: err}
 	}
 
 	switch cmd {
 	case "add":
-		task = tasks.Add{t}
+		task = tasks.Add{Task: t}
 	case "remove":
-		task = tasks.Remove{t}
+		task = tasks.Remove{Task: t}
 	case "lease":
-		task = tasks.Lease{t}
+		task = tasks.Lease{Task: t}
 	default:
-		task = tasks.Invalid{fmt.Errorf("No task found for command: %s", cmd)}
+		task = tasks.Invalid{Error: fmt.Errorf("No task found for command: %s", cmd)}
 	}
 
 	return

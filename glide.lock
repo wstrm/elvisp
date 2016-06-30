@@ -1,17 +1,21 @@
-hash: 0310519a5ae7117582f3223639480f7520d3d779646e4dc5e6d8b4dc40512169
-updated: 2016-06-16T17:45:32.335480586+02:00
+hash: 6b8f69b806ac248e2bd16960416e1587691fe41e259780732ae9132be533c07a
+updated: 2016-06-26T13:57:29.242634011+02:00
 imports:
 - name: github.com/boltdb/bolt
-  version: 05e441d7b3ded9164c5b912521504e7711dd0ba2
+  version: 3f7947a25d970e1e5f512276c14d5dcf731ccd5e
 - name: github.com/ehmry/go-bencode
   version: 41dc720d46b60ea6957b4e11ddd5a3cc45e15142
 - name: github.com/ehmry/go-cjdns
-  version: 42813f6f0f9444d6ef1c8f5c022e91a8e4f4fe1f
+  version: d823012d344899994d44aa6a02a8390ab9aace0c
   subpackages:
-  - admin
   - key
+- name: github.com/fc00/go-cjdns
+  version: d823012d344899994d44aa6a02a8390ab9aace0c
+  subpackages:
+  - key
+  - admin
 - name: golang.org/x/crypto
-  version: f3241ce8505855877cc8a9717bd61a0f7c4ea83c
+  version: 811831de4c4dd03a0b8737233af3b36852386373
   subpackages:
   - bcrypt
   - curve25519

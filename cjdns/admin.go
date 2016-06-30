@@ -1,7 +1,7 @@
 package cjdns
 
 import (
-	"github.com/ehmry/go-cjdns/admin"
+	"github.com/fc00/go-cjdns/admin"
 )
 
 // Conn wraps around a go-cjdns admin connection

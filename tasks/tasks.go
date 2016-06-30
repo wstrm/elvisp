@@ -11,11 +11,6 @@ import (
 	"github.com/willeponken/elvisp/lease"
 )
 
-const (
-	errorInvalidLength = "2 Invalid length of arguments"
-	errorInvalidTask   = "1 Invalid task specified"
-)
-
 // TaskInterface defines the methods needed for a default task
 type TaskInterface interface {
 	Run() (result string, err error)
