@@ -23,25 +23,18 @@ var binUint64Tests = []struct {
 }
 
 func generateDuplicateUsers() (mockUsers []mockUser) {
-	var err error
-	var key1, key2 *key.Public
-
-	key1, err = key.DecodePublic("lpu15wrt3tb6d8vngq9yh3lr4gmnkuv0rgcd2jwl5rp5v0mhlg30.k")
-	key2 = key1 // Use same user to test for duplicates (this is why it's "invalid")
+	mockKey, err := key.DecodePublic("lpu15wrt3tb6d8vngq9yh3lr4gmnkuv0rgcd2jwl5rp5v0mhlg30.k")
 
 	if err != nil {
 		log.Fatalf("populateMockUsers() returned unexpected error: %v", err)
 	}
 
-	user1 := mockUser{key1, 1, false}
-	user2 := mockUser{key2, 1, true}
-
-	mockUsers = append(mockUsers, user1, user2)
+	mockUsers = append(mockUsers, mockUser{mockKey, 1, false}, mockUser{mockKey, 1, true}) // Second is invalid because it's duplicate
 
 	return
 }
 
-func generateManyUsers(numUsers int) []mockUser {
+func generateMockUsers(numUsers int) []mockUser {
 
 	mockUsers := make([]mockUser, numUsers)
 	for i := 0; i < numUsers; i++ {
@@ -73,7 +66,8 @@ func TestBinToUint64(t *testing.T) {
 	}
 }
 
-func TestAddUserDuplicate(t *testing.T) {
+// TestAddUser_duplicate checks if adding duplicate users returns an error
+func TestAddUser_duplicate(t *testing.T) {
 	setupDatabase()
 	mockUsers := generateDuplicateUsers()
 
@@ -97,13 +91,14 @@ func TestAddUserDuplicate(t *testing.T) {
 	}
 }
 
-func TestAddUserMany(t *testing.T) {
+// TestAddUser_many checks if we're able to add 1000 users without hickups to the database
+func TestAddUser_many(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping test in short mode")
 	}
 
 	setupDatabase()
-	mockUsers := generateManyUsers(1000)
+	mockUsers := generateMockUsers(1000)
 
 	for row, test := range mockUsers {
 		id, err := testDB.AddUser(test.pubkey)
@@ -122,5 +117,24 @@ func TestAddUserMany(t *testing.T) {
 		if id != test.id && !test.invalid {
 			t.Errorf("Row: %d unexpected id, got id: %d, wanted id: %d", row, id, test.id)
 		}
+	}
+}
+
+// TestAddUser_fillGap checks if the gap created by adding 3 users then removing the 2nd will be filled when adding an user again
+func TestAddUser_fillGap(t *testing.T) {
+	setupDatabase()
+	mockUsers := generateMockUsers(3)
+
+	// Populate the database with the 3 users
+	for _, test := range mockUsers {
+		testDB.AddUser(test.pubkey)
+	}
+
+	secondUser := mockUsers[1]
+	testDB.DelUser(secondUser.pubkey)          // Remove the second user
+	id, _ := testDB.AddUser(secondUser.pubkey) // Add the user again, should get the same as last time (2)
+
+	if id != secondUser.id {
+		t.Errorf("User was not added inside the gap, got id: %d, wanted: %d", id, secondUser.id)
 	}
 }
