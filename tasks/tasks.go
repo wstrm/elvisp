@@ -5,10 +5,10 @@ import (
 	"log"
 	"net"
 
-	"github.com/willeponken/go-cjdns/key"
 	"github.com/willeponken/elvisp/cjdns"
 	"github.com/willeponken/elvisp/database"
 	"github.com/willeponken/elvisp/lease"
+	"github.com/willeponken/go-cjdns/key"
 )
 
 // TaskInterface defines the methods needed for a default task
@@ -49,9 +49,6 @@ func Init(argv []string, db *database.Database, admin *cjdns.Conn, clientIP net.
 	return
 }
 
-// Add should implement the add task
-type Add struct{ Task }
-
 // Remove should implement the remove task
 type Remove struct{ Task }
 
@@ -65,41 +62,59 @@ type Release struct{ Task }
 type Invalid struct{ Error error }
 
 // allowIPTunnel adds the defined IP to the cjdns IP tunnel, if it fails, it will delete the user from the database.
-func (t Add) allowIPTunnel(c lease.CIDR, id uint64) (ip net.IP, err error) {
+func (t Lease) allowIPTunnel(ips []net.IP) (err error) {
 
-	ip, err = lease.Generate(c, id)
-	if err != nil {
-		return
-	}
+	for _, ip := range ips {
+		if err = t.admin.AddUser(t.pubkey, ip); err != nil {
+			if e := t.db.DelUser(t.pubkey); e != nil {
+				log.Println(err)
+			}
 
-	if err = t.admin.AddUser(t.pubkey, ip); err != nil {
-		if e := t.db.DelUser(t.pubkey); e != nil {
-			log.Println(err)
+			return
 		}
-
-		return
 	}
 
 	return
 }
 
-// Run Add adds a user using the public key and a token.
-func (t Add) Run() (result string, err error) {
-	var id uint64
+func (t Lease) generateIPs(cidrs []lease.CIDR, id uint64) (ips []net.IP, str string, err error) {
 	var ip net.IP
-
-	id, err = t.db.AddUser(t.pubkey)
-	if err != nil {
-		return
-	}
-
-	for _, cidr := range t.cidrs {
-		ip, err = t.allowIPTunnel(cidr, id)
+	for _, cidr := range cidrs {
+		ip, err = lease.Generate(cidr, id)
 		if err != nil {
 			return
 		}
 
-		result += ip.String() + " "
+		ips = append(ips, ip)
+		str += ip.String() + " "
+	}
+
+	return
+}
+
+// Run Lease adds a user using the public key and a token.
+func (t Lease) Run() (result string, err error) {
+	var id uint64
+	var ips []net.IP
+	db := t.db
+
+	// Check if the user already exists
+	id, exists := db.GetID(t.pubkey)
+	if exists != nil { // User does not exist, add to database
+		id, err = db.AddUser(t.pubkey)
+		if err != nil {
+			return
+		}
+	}
+
+	ips, result, err = t.generateIPs(t.cidrs, id)
+	if err != nil {
+		return
+	}
+
+	err = t.allowIPTunnel(ips)
+	if err != nil {
+		return
 	}
 
 	return
@@ -120,28 +135,6 @@ func (t Remove) Run() (result string, err error) {
 	}
 
 	result = fmt.Sprintf("Removed user: %s", pubkey.String())
-	return
-}
-
-// Run Lease returns the users leases.
-func (t Lease) Run() (result string, err error) {
-	var id uint64
-	var ip net.IP
-
-	id, err = t.db.GetID(t.pubkey)
-	if err != nil {
-		return
-	}
-
-	for _, cidr := range t.cidrs {
-		ip, err = lease.Generate(cidr, id)
-		if err != nil {
-			return
-		}
-
-		result += ip.String() + " "
-	}
-
 	return
 }
 

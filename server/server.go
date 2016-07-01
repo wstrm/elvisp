@@ -135,12 +135,10 @@ func (s *Server) taskFactory(conn net.Conn, input string) (task tasks.TaskInterf
 	}
 
 	switch cmd {
-	case "add":
-		task = tasks.Add{Task: t}
-	case "remove":
-		task = tasks.Remove{Task: t}
 	case "lease":
 		task = tasks.Lease{Task: t}
+	case "remove":
+		task = tasks.Remove{Task: t}
 	default:
 		task = tasks.Invalid{Error: fmt.Errorf("No task found for command: %s", cmd)}
 	}
@@ -165,15 +163,16 @@ func (s *Server) requestHandler(conn net.Conn, out chan string) error {
 
 	for {
 		line, err := bufio.NewReader(conn).ReadBytes('\n')
-		if err != nil {
-			if err == io.EOF {
-				log.Printf("Disconnected: %s", conn.RemoteAddr().String())
-			}
+		msg := strings.TrimSpace(string(line))
+
+		// Exit on error, empty messsage, quit message or exit message
+		if err != nil || msg == "" || msg == "quit" || msg == "exit" {
+			log.Printf("Disconnected: %s", conn.RemoteAddr().String())
 
 			return err
 		}
 
-		t := s.taskFactory(conn, strings.TrimRight(string(line), "\n"))
+		t := s.taskFactory(conn, msg)
 
 		go s.taskRunner(t, out)
 	}

@@ -45,20 +45,3 @@ Get:
 ```
 success Removed user: <public-key-for-user.k>
 ```
-
-### Add user
-
-Send (from user node):
-```
-add
-```
-
-Send (using admin):
-```
-add <master-password-for-admin> <cjdns-ipv6-address>
-```
-
-Get:
-```
-success <ipv4-address-here> <ipv6-address-here> 
-```
