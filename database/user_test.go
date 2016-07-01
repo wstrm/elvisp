@@ -121,7 +121,7 @@ func TestAddUser_many(t *testing.T) {
 }
 
 // TestAddUser_fillGap checks if the gap created by adding 3 users then removing the 2nd will be filled when adding an user again
-func TestAddUser_fillGap(t *testing.T) {
+func TestAddDelUser_fillGap(t *testing.T) {
 	setupDatabase()
 	mockUsers := generateMockUsers(3)
 
@@ -136,5 +136,17 @@ func TestAddUser_fillGap(t *testing.T) {
 
 	if id != secondUser.id {
 		t.Errorf("User was not added inside the gap, got id: %d, wanted: %d", id, secondUser.id)
+	}
+}
+
+// TestGetID_empty tests if GetID returns an error on empty database (ID: 0 and an error)
+func TestGetID_empty(t *testing.T) {
+	setupDatabase()
+
+	mockUser := generateMockUsers(1)[0]
+	id, err := testDB.GetID(mockUser.pubkey)
+
+	if id != 0 && err == nil {
+		t.Errorf("GetID returned unexpected id: %d, or a nil error", id)
 	}
 }
