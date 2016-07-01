@@ -11,9 +11,9 @@ BUILD_TIME=`date +%FT%T%z`
 
 LDFLAGS=-ldflags "-X main.Version=${VERSION} -X main.BuildTime=${BUILD_TIME}"
 
-.PHONY: install deploy clean build init test race
+.PHONY: install deploy clean build init testshort testlong race
 
-all: init build test
+all: init build testshort
 build: $(SOURCES)
 	go build ${LDFLAGS} -o ${BINARY}
 
@@ -30,7 +30,10 @@ deploy:
 clean:
 	if [ -f ${BINARY} ] ; then rm ${BINARY} ; fi
 
-test:
+testshort:
+	go test -short ${TESTPKGS}
+
+testlong:
 	go test ${TESTPKGS}
 
 race:
