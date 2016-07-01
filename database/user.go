@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/fc00/go-cjdns/key"
+	"github.com/willeponken/go-cjdns/key"
 )
 
 // usersBucket defines the namespace for the user bucket.

@@ -5,7 +5,7 @@ import (
 	"log"
 	"net"
 
-	"github.com/ehmry/go-cjdns/key"
+	"github.com/willeponken/go-cjdns/key"
 	"github.com/willeponken/elvisp/cjdns"
 	"github.com/willeponken/elvisp/database"
 	"github.com/willeponken/elvisp/lease"

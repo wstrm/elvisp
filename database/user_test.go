@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/fc00/go-cjdns/key"
+	"github.com/willeponken/go-cjdns/key"
 )
 
 type mockUser struct {

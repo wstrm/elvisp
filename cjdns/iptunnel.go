@@ -4,7 +4,7 @@ import (
 	"log"
 	"net"
 
-	"github.com/ehmry/go-cjdns/key"
+	"github.com/willeponken/go-cjdns/key"
 )
 
 // AddUser adds a new user to the database and allows a new iptunnel connection for the user.
