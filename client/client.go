@@ -2,11 +2,17 @@ package main
 
 import (
 	"bufio"
+	"flag"
 	"log"
 	"net"
 	"os"
 	"strings"
 )
+
+var flags struct {
+	leaseTask, removeTask bool
+	serverAddr            string
+}
 
 func connect(addr string) (conn net.Conn, err error) {
 	tcpAddr, err := net.ResolveTCPAddr("tcp6", addr)
@@ -33,14 +39,40 @@ func sendCmd(conn net.Conn, cmd string) (resp string, err error) {
 	return
 }
 
+func init() {
+	flag.BoolVar(&flags.leaseTask, "l", flags.leaseTask, "Request lease.")
+	flag.BoolVar(&flags.removeTask, "r", flags.removeTask, "Remove client.")
+	flag.StringVar(&flags.serverAddr, "a", flags.serverAddr, "Address for server.")
+
+	flag.Parse()
+
+	if flags.serverAddr == "" {
+		log.Fatal("No server address defined")
+	}
+
+	if !flags.leaseTask && !flags.removeTask {
+		log.Fatal("No task defined")
+	}
+}
+
 func main() {
+	var err error
+	var resp string
+
 	conn, err := connect("[fc38:f1bc:28ad:21be:2c9d:a543:a091:3087]:4132")
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer conn.Close()
 
-	resp, err := sendCmd(conn, "lease")
+	if flags.leaseTask {
+		resp, err = sendCmd(conn, "lease")
+	}
+
+	if flags.removeTask {
+		resp, err = sendCmd(conn, "remove")
+	}
+
 	if err != nil {
 		log.Fatal(err)
 	}

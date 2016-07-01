@@ -1,5 +1,6 @@
-# Go binary
+# Go binaries
 elvisp
+client/client
 
 # Glide
 vendor/
