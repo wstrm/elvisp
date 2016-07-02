@@ -59,7 +59,7 @@ func main() {
 	var err error
 	var resp string
 
-	conn, err := connect("[fc38:f1bc:28ad:21be:2c9d:a543:a091:3087]:4132")
+	conn, err := connect(flags.serverAddr)
 	if err != nil {
 		log.Fatal(err)
 	}
