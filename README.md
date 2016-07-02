@@ -1,7 +1,7 @@
 ![Elvisp](elvisp.png)
 
 # Elvisp (Work in Progress) [![Build Status](https://travis-ci.org/willeponken/elvisp.svg?branch=master)](https://travis-ci.org/willeponken/elvisp)
-Elvisp distributes a public IPv6 address in a cjdns-based IP tunnel using the public key that each user provides. It will add the user's assigned address with cjdns' admin API. Elvisp then returns the public key for the cjdns instance that acts like the tunnel.
+Elvisp assigns IPv6 and/or IPv4 addresses for a cjdns-based IP tunnel using the public key for the connecting node. It will add the user's assigned address with cjdns' admin API. Elvisp then returns the assigned address(es).
 
 ### Flags
 ```
