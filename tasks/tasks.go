@@ -18,30 +18,31 @@ type TaskInterface interface {
 
 // Task needs the arguments to use, and a database to save the changes to
 type Task struct {
-	argv     []string
-	db       *database.Database
-	admin    *cjdns.Conn
-	clientIP net.IP
-	pubkey   *key.Public
-	cidrs    []lease.CIDR
+	argv                 []string
+	db                   *database.Database
+	admin                *cjdns.Conn
+	clientIP, serverIP   net.IP
+	clientKey, serverKey *key.Public
+	cidrs                []lease.CIDR
 }
 
 // Init returns a new task
-func Init(argv []string, db *database.Database, admin *cjdns.Conn, clientIP net.IP, cidrs []lease.CIDR) (task Task, err error) {
+func Init(argv []string, db *database.Database, admin *cjdns.Conn, clientIP, serverIP net.IP, cidrs []lease.CIDR) (task Task, err error) {
 	task.argv = argv
 	task.db = db
 	task.admin = admin
 	task.clientIP = clientIP
 	task.cidrs = cidrs
 
-	var k string
-	k, err = task.admin.LookupPubKey(clientIP.String())
-
+	var clientKey, serverKey string
+	clientKey, err = task.admin.LookupPubKey(clientIP.String())
+	serverKey, err = task.admin.LookupPubKey(serverIP.String())
 	if err != nil {
 		return task, err
 	}
 
-	task.pubkey, err = key.DecodePublic(k)
+	task.clientKey, err = key.DecodePublic(clientKey)
+	task.serverKey, err = key.DecodePublic(serverKey)
 	if err != nil {
 		return task, err
 	}
@@ -58,6 +59,9 @@ type Lease struct{ Task }
 // Release should implement the release task
 type Release struct{ Task }
 
+// Info should implement the info task
+type Info struct{ Task }
+
 // Invalid should implement the invalid task, i.e. take an error
 type Invalid struct{ Error error }
 
@@ -65,8 +69,8 @@ type Invalid struct{ Error error }
 func (t Lease) allowIPTunnel(ips []net.IP) (err error) {
 
 	for _, ip := range ips {
-		if err = t.admin.AddUser(t.pubkey, ip); err != nil {
-			if e := t.db.DelUser(t.pubkey); e != nil {
+		if err = t.admin.AddUser(t.clientKey, ip); err != nil {
+			if e := t.db.DelUser(t.clientKey); e != nil {
 				log.Println(err)
 			}
 
@@ -99,9 +103,9 @@ func (t Lease) Run() (result string, err error) {
 	db := t.db
 
 	// Check if the user already exists
-	id, exists := db.GetID(t.pubkey)
+	id, exists := db.GetID(t.clientKey)
 	if exists != nil { // User does not exist, add to database
-		id, err = db.AddUser(t.pubkey)
+		id, err = db.AddUser(t.clientKey)
 		if err != nil {
 			return
 		}
@@ -124,7 +128,7 @@ func (t Lease) Run() (result string, err error) {
 func (t Remove) Run() (result string, err error) {
 	db := t.db
 	admin := t.admin
-	pubkey := t.pubkey
+	pubkey := t.clientKey
 
 	if err = db.DelUser(pubkey); err != nil {
 		return
@@ -135,6 +139,13 @@ func (t Remove) Run() (result string, err error) {
 	}
 
 	result = fmt.Sprintf("Removed user: %s", pubkey.String())
+	return
+}
+
+// Run Info returns information about the Elvisp server
+func (t Info) Run() (result string, err error) {
+	log.Println(t)
+	result = t.serverKey.String()
 	return
 }
 

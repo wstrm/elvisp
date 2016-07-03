@@ -76,8 +76,8 @@ func validCjdnsIPv6(ip net.IP) (err error) {
 }
 
 // resolveCjdnsIPv6 revoles the connecting IPv6 using the TCP address and checks if it's part of the cjdns address space.
-func parseCjdnsIPv6(addr string) (ip net.IP, err error) {
-	tcpAddr, err := net.ResolveTCPAddr("tcp6", addr)
+func parseCjdnsIPv6(addr net.Addr) (ip net.IP, err error) {
+	tcpAddr, err := net.ResolveTCPAddr("tcp6", addr.String())
 	if err != nil {
 		return
 	}
@@ -100,7 +100,7 @@ func (s *Server) taskFactory(conn net.Conn, input string) (task tasks.TaskInterf
 	}
 
 	var password string
-	var clientIP net.IP
+	var clientIP, serverIP net.IP
 
 	cmd := strings.ToLower(array[0])
 	argv := array[1:]
@@ -109,27 +109,32 @@ func (s *Server) taskFactory(conn net.Conn, input string) (task tasks.TaskInterf
 	if len(array) == 3 {
 		password = array[1]
 		clientIP = net.ParseIP(array[2])
-		if clientIP == nil {
-			return tasks.Invalid{Error: err}
-		}
-
-		err = validCjdnsIPv6(clientIP)
-		if err != nil {
-			return tasks.Invalid{Error: err}
-		}
 
 		if err = s.authAdmin(password); err != nil {
 			return tasks.Invalid{Error: err}
 		}
+
+		if clientIP == nil {
+			return tasks.Invalid{Error: err}
+		}
+
+		if err = validCjdnsIPv6(clientIP); err != nil {
+			return tasks.Invalid{Error: err}
+		}
 	} else {
 		// If not admin, use the remote address that is currently connecting.
-		clientIP, err = parseCjdnsIPv6(conn.RemoteAddr().String())
+		clientIP, err = parseCjdnsIPv6(conn.RemoteAddr())
 		if err != nil {
 			return tasks.Invalid{Error: err}
 		}
 	}
 
-	t, err = tasks.Init(argv, s.db, s.admin, clientIP, s.cidrs)
+	serverIP, err = parseCjdnsIPv6(conn.LocalAddr())
+	if err != nil {
+		return tasks.Invalid{Error: err}
+	}
+
+	t, err = tasks.Init(argv, s.db, s.admin, clientIP, serverIP, s.cidrs)
 	if err != nil {
 		return tasks.Invalid{Error: err}
 	}
@@ -139,6 +144,8 @@ func (s *Server) taskFactory(conn net.Conn, input string) (task tasks.TaskInterf
 		task = tasks.Lease{Task: t}
 	case "remove":
 		task = tasks.Remove{Task: t}
+	case "info":
+		task = tasks.Info{Task: t}
 	default:
 		task = tasks.Invalid{Error: fmt.Errorf("No task found for command: %s", cmd)}
 	}
@@ -161,6 +168,10 @@ func (s *Server) taskRunner(t tasks.TaskInterface, out chan string) {
 func (s *Server) requestHandler(conn net.Conn, out chan string) error {
 	defer close(out)
 
+	// Call info task on connection
+	info := s.taskFactory(conn, "info")
+	go s.taskRunner(info, out)
+
 	for {
 		line, err := bufio.NewReader(conn).ReadBytes('\n')
 		msg := strings.TrimSpace(string(line))
@@ -173,7 +184,6 @@ func (s *Server) requestHandler(conn net.Conn, out chan string) error {
 		}
 
 		t := s.taskFactory(conn, msg)
-
 		go s.taskRunner(t, out)
 	}
 }

@@ -45,3 +45,15 @@ Get:
 ```
 success Removed user: <public-key-for-user.k>
 ```
+
+### Retrieve server info
+
+Send (from user node or admin):
+```
+info
+```
+
+Get:
+```
+success <public-key-for-server.k>
+```

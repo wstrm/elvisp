@@ -1,8 +1,6 @@
 package cjdns
 
-import (
-	"github.com/willeponken/go-cjdns/admin"
-)
+import "github.com/willeponken/go-cjdns/admin"
 
 // Conn wraps around a go-cjdns admin connection
 type Conn struct {
