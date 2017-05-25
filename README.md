@@ -45,15 +45,12 @@ __Elvisp requires the follwing cjdns admin methods:__
  * `IpTunnel_removeConnection`
  * `NodeStore_nodeForAddr`
 
-__Note:__
-*`IpTunnel_removeConnection` was first implemented with commit `acbb6a8` into the `crashey` branch. As of 2016-06-16 it has not been merged into the `master` branch.*
-
-__Elvisp works with *(kinda)*:__
+__Elvisp works with (atleast):__
 ```
-Cjdns version: cjdns-v17.3-129-g116fa2a
+Cjdns version: cjdns-v17.4
 Cjdns protocol version: 17
 ```
 
 ### Documentation
- * Protocol [protocol-v2](doc/protocol-v2.md)
- * Setup a gateway [setup-gateway](doc/setup-gateway.md)
+ * Protocol [protocol-v2](docs/protocol-v2.md)
+ * Setup a gateway [setup-gateway](docs/setup-gateway.md)
