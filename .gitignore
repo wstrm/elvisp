@@ -1,3 +1,5 @@
 # Go binaries
-elvispd
-elvispc
+cmd/elvispd/elvispd
+cmd/elvispc/elvispc
+/elvispd
+/elvispc
