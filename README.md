@@ -3,9 +3,15 @@
 # Elvisp (Work in Progress) [![Build Status](https://travis-ci.org/willeponken/elvisp.svg?branch=master)](https://travis-ci.org/willeponken/elvisp)
 Elvisp assigns IPv6 and/or IPv4 addresses for a cjdns-based IP tunnel using the public key for the connecting node. It will add the user's assigned address with cjdns' admin API. Elvisp then returns the assigned address(es).
 
-### Flags
+## Installation
 ```
-Usage of ./elvisp:
+go get github.com/willeponken/elvisp/cmd/...
+```
+
+## Usage
+### Elvispd flags
+```
+Usage of elvispd:
   -cidr value
     	CIDR to use for IP leasing, use flag repeatedly for multiple CIDR's.
   -cjdns-ip string
@@ -20,11 +26,10 @@ Usage of ./elvisp:
     	Listen address for TCP. (default ":4132")
   -password string
     	Password for administrating Elvisp.
-  -v	Print current version and exit.
 ```
 __Example:__
 ```
-./elvisp -cidr 192.168.1.0/24 -cidr 1234::0/16 -cidr 172.16.0.0/12 -cjdns-password 6c12zbnNoThisIsntMyRealPasswordn7x1
+elvispd -cidr 192.168.1.0/24 -cidr 1234::0/16 -cidr 172.16.0.0/12 -cjdns-password 6c12zbnNoThisIsntMyRealPasswordn7x1
 ```
 
 Which will add the users / nodes to subnets:
@@ -36,6 +41,20 @@ So the first user will get:
  * 192.168.1.1
  * 1234::1
  * 172.16.0.1
+
+### Elvispc flags
+```
+Usage of elvispc:
+  -a string
+    	Address for server.
+  -l	Request lease.
+  -r	Remove client.
+```
+__Example:__
+```
+elvispc -a 127.0.0.1:4132 -l # Request lease
+elvispc -a 127.0.0.1:4132 -r # Remove client
+```
 
 ### Supported cjdns versions
 __Elvisp requires the follwing cjdns admin methods:__

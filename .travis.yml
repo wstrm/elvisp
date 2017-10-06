@@ -3,4 +3,7 @@ language: go
 go:
   - tip
 
-install: make
+script:
+  - go build github.com/willeponken/elvisp/cmd/elvispd
+  - go build github.com/willeponken/elvisp/cmd/elvispc
+  - for /f "" %%G in ('go list github.com/willeponken/elvisp/... ^| find /i /v "/vendor/"') do ( go test %%G & IF ERRORLEVEL == 1 EXIT 1)
