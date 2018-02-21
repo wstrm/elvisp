@@ -3,6 +3,9 @@ language: go
 go:
   - tip
 
+install:
+  - go get -u github.com/golang/lint/golint
+
 script:
   - go build github.com/willeponken/elvisp/cmd/elvispd
   - go build github.com/willeponken/elvisp/cmd/elvispc
