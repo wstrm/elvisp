@@ -3,3 +3,6 @@ cmd/elvispd/elvispd
 cmd/elvispc/elvispc
 /elvispd
 /elvispc
+
+# Test
+/coverage.txt

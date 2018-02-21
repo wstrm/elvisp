@@ -6,4 +6,8 @@ go:
 script:
   - go build github.com/willeponken/elvisp/cmd/elvispd
   - go build github.com/willeponken/elvisp/cmd/elvispc
-  - go test $(go list github.com/willeponken/elvisp/...)
+  - ./tool/test.bash github.com/willeponken/elvisp/cmd/...
+
+after_success:
+  - go get github.com/mattn/goveralls
+  - $HOME/gopath/bin/goveralls -coverprofile=coverage.txt -service=travis-ci -repotoken $COVERALLS_TOKEN
