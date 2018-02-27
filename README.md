@@ -1,6 +1,8 @@
 ![Elvisp](elvisp.png)
 
 # Elvisp (Work in Progress) [![Build Status](https://travis-ci.org/willeponken/elvisp.svg?branch=master)](https://travis-ci.org/willeponken/elvisp) [![Coverage Status](https://coveralls.io/repos/github/willeponken/elvisp/badge.svg?branch=master)](https://coveralls.io/github/willeponken/elvisp?branch=master)
+**El** (Spanish for *the*) **VISP** (*Virtual Internet Service Provider*)
+
 Elvisp assigns IPv6 and/or IPv4 addresses for a cjdns-based IP tunnel using the public key for the connecting node. It will add the user's assigned address with cjdns' admin API. Elvisp then returns the assigned address(es).
 
 ## Installation
