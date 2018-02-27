@@ -6,3 +6,4 @@ cmd/elvispc/elvispc
 
 # Test
 /coverage.txt
+/coverage.tmp

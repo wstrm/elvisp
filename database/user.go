@@ -1,7 +1,6 @@
 package database
 
 import (
-	"encoding/binary"
 	"errors"
 	"fmt"
 	"log"
@@ -11,22 +10,6 @@ import (
 
 // usersBucket defines the namespace for the user bucket.
 const usersBucket = "Users"
-
-// uint64ToBin returns an 8-byte big endian representation of v.
-func uint64ToBin(v uint64) []byte {
-	b := make([]byte, 8)
-	binary.BigEndian.PutUint64(b, v)
-	return b
-}
-
-// binToUint64 takes an 8-byte big endian and converts it into a uint64.
-func binToUint64(v []byte) uint64 {
-	if len(v) != 8 {
-		log.Fatalf("Invalid length of binary: %d", len(v))
-	}
-
-	return binary.BigEndian.Uint64(v)
-}
 
 // userExists takes a identifier and tries to type cast it into either a public key or a uint64, and then lookups that identifier in the database.
 func (db *Database) userExists(identifier interface{}) (pos []byte, exists bool) {

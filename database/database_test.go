@@ -1,34 +1,49 @@
-package database
+package database_test
 
 import (
-	"log"
+	"io/ioutil"
 	"os"
-	"testing"
+
+	"github.com/willeponken/elvisp/database"
 )
 
-const dbPath = "/tmp/testing-show.db"
-
-var testDB Database
-
-func removeDatabase() error {
-	return os.Remove(dbPath)
-}
-
-func setupDatabase() {
-	var err error
-
-	removeDatabase() // Make sure there is no already existing database
-
-	testDB, err = Open(dbPath)
+func tempFile() string {
+	file, err := ioutil.TempFile("", "elvisp-")
 	if err != nil {
-		log.Fatalf("Open database should be successfull, returned error: %v", err)
+		panic(err)
 	}
+
+	if err := file.Close(); err != nil {
+		panic(err)
+	}
+
+	if err := os.Remove(file.Name()); err != nil {
+		panic(err)
+	}
+
+	return file.Name()
 }
 
-func TestMain(m *testing.M) {
-	runResult := m.Run()
+type TestDB struct {
+	database.Database
+}
 
-	removeDatabase() // Clean up the database
+func MustOpen() TestDB {
+	db, err := database.Open(tempFile())
+	if err != nil {
+		panic(err)
+	}
 
-	os.Exit(runResult)
+	return TestDB{db}
+}
+
+func (t *TestDB) Close() error {
+	defer os.Remove(t.Path())
+	return t.Database.Close()
+}
+
+func (t *TestDB) MustClose() {
+	if err := t.Close(); err != nil {
+		panic(err)
+	}
 }

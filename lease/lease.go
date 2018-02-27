@@ -51,9 +51,6 @@ func uint128Add(a, b, i uint64) (uint64, uint64) {
 	}
 
 	b += i
-	if i < 0 {
-		a += math.MaxUint64
-	}
 
 	return a, b
 }
