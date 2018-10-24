@@ -4,7 +4,7 @@ go:
   - tip
 
 install:
-  - go get -u github.com/golang/lint/golint
+  - go get -u golang.org/x/lint/golint
 
 script:
   - go build github.com/willeponken/elvisp/cmd/elvispd
