@@ -7,12 +7,11 @@ go:
 env:
   - GO111MODULE=on
 
-install:
-  - go get -u golang.org/x/lint/golint
+install: true
 
 script:
-  - go build github.com/willeponken/elvisp/cmd/elvispd
-  - go build github.com/willeponken/elvisp/cmd/elvispc
+  - go build -mod=vendor github.com/willeponken/elvisp/cmd/elvispd
+  - go build -mod=vendor github.com/willeponken/elvisp/cmd/elvispc
   - ./tool/test.bash github.com/willeponken/elvisp/cmd/...
 
 after_success:
