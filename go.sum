@@ -1,0 +1,14 @@
+github.com/boltdb/bolt v0.0.0-20160616193316-3f7947a25d97 h1:XLu0ALSef3rWzj1+jMH8iGjOCWbASrmkVKpXtrmO0Ss=
+github.com/boltdb/bolt v0.0.0-20160616193316-3f7947a25d97/go.mod h1:clJnj/oiGkjum5o1McbSZDSLxVThjynRyGBgiAx27Ps=
+github.com/ehmry/go-bencode v1.1.1 h1:zNNk7c0Kf2+wlufU8dawnHZU9UI1gGOnlzN/OL6Q7ig=
+github.com/ehmry/go-bencode v1.1.1/go.mod h1:mEASVRitneq5xbjNQHu5DWBVFyeNTFHdNnHpgtPysWk=
+github.com/willeponken/go-cjdns v0.0.0-20160701150232-b68d38c777e9 h1:/QXZtliPM8TwHEHL+o68yeVpi7sYtXfYqj9rABSE/JA=
+github.com/willeponken/go-cjdns v0.0.0-20160701150232-b68d38c777e9/go.mod h1:YjdvFdnH3BE0If32reukpe/n7qX7wIyMqtuJsQc+H+s=
+golang.org/x/crypto v0.0.0-20160624093139-811831de4c4d h1:VuwUNDWHbiJBfKXj56WkSp9RZH87xyhwcGu9gRZsNj4=
+golang.org/x/crypto v0.0.0-20160624093139-811831de4c4d/go.mod h1:6SG95UA2DQfeDnfUPMdvaQW0Q7yPrPDi9nlGo2tz2b4=
+golang.org/x/lint v0.0.0-20181026193005-c67002cb31c3 h1:x/bBzNauLQAlE3fLku/xy92Y8QwKX5HZymrMz2IiKFc=
+golang.org/x/lint v0.0.0-20181026193005-c67002cb31c3/go.mod h1:UVdnD1Gm6xHRNCYTkRU2/jEulfH38KcIWyp/GAMgvoE=
+golang.org/x/sys v0.0.0-20160615012701-62bee0375999 h1:mMwksw9evYb/M6VJQLeswaoE9yJ4X/Rg8YPFwo8nDfk=
+golang.org/x/sys v0.0.0-20160615012701-62bee0375999/go.mod h1:STP8DvDyc/dI5b8T5hshtkjS+E42TnysNCUPdjciGhY=
+golang.org/x/tools v0.0.0-20181026183834-f60e5f99f081 h1:QJP9sxq2/KbTxFnGduVryxJOt6r/UVGyom3tLaqu7tc=
+golang.org/x/tools v0.0.0-20181026183834-f60e5f99f081/go.mod h1:n7NCudcB/nEzxVGmLbDWY5pfWTLqBcC2KZ6jyYvM4mQ=

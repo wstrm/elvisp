@@ -31,12 +31,12 @@ go_vet() {
 }
 
 go_lint() {
-	golint -min_confidence 0.0 $(local_dependencies /...)
+	go run golang.org/x/lint/golint -min_confidence 0.0 $(local_dependencies /...)
 }
 
 go_test() {
 	touch coverage.tmp
-	echo 'mode: atomic' > coverage.txt && local_dependencies | xargs -n1 -I{} sh -c 'echo "> {}"; go test -tags test -race -covermode=atomic -coverprofile=coverage.tmp {} && tail -n +2 coverage.tmp >> coverage.txt'
+	echo 'mode: atomic' > coverage.txt && local_dependencies | xargs -n1 -I{} sh -c 'echo "> {}"; go test -mod=vendor -tags test -race -covermode=atomic -coverprofile=coverage.tmp {} && tail -n +2 coverage.tmp >> coverage.txt'
 	rm coverage.tmp 2>/dev/null
 }
 
