@@ -7,7 +7,7 @@ github.com/willeponken/go-cjdns/admin
 github.com/willeponken/go-cjdns/key
 # golang.org/x/crypto v0.0.0-20160624093139-811831de4c4d
 golang.org/x/crypto/bcrypt
-golang.org/x/crypto/curve25519
 golang.org/x/crypto/blowfish
+golang.org/x/crypto/curve25519
 # golang.org/x/sys v0.0.0-20160615012701-62bee0375999
 golang.org/x/sys/unix
